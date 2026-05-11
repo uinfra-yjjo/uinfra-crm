@@ -254,6 +254,31 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+/* TIME PICKER */
+.time-picker-wrap{position:relative;display:inline-block;width:100%;}
+.time-display{display:flex;align-items:center;gap:6px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r);background:var(--bg2);cursor:pointer;font-size:14px;color:var(--text);transition:border-color .15s;user-select:none;}
+.time-display:hover{border-color:var(--border2);}
+.time-display.open{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,111,216,.1);}
+.time-display .time-val{flex:1;font-weight:500;}
+.time-display .time-placeholder{flex:1;color:var(--text3);}
+.time-popup{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rlg);box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:500;padding:16px;}
+.time-popup.open{display:block;}
+.time-cols{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:14px;}
+.time-col{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.time-col label{font-size:10px;color:var(--text3);font-weight:600;}
+.time-spin{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.time-spin-btn{width:36px;height:28px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);transition:all .12s;}
+.time-spin-btn:hover{background:var(--blue-bg);color:var(--blue);border-color:var(--blue);}
+.time-spin-btn:active{transform:scale(.92);}
+.time-spin-input{width:44px;text-align:center;padding:6px 4px;border:1.5px solid var(--border);border-radius:6px;font-size:15px;font-weight:700;color:var(--text);background:var(--bg2);outline:none;}
+.time-spin-input:focus{border-color:var(--blue);}
+.time-sep{font-size:20px;font-weight:700;color:var(--text2);margin-top:22px;}
+.time-confirm-btn{width:100%;padding:9px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer;transition:all .12s;}
+.time-confirm-btn:hover{filter:brightness(1.1);}
+.time-clear-btn{width:100%;padding:7px;background:transparent;color:var(--text3);border:1px solid var(--border);border-radius:var(--r);font-size:12px;cursor:pointer;margin-top:6px;transition:all .12s;}
+.time-clear-btn:hover{background:var(--bg3);}
+/* DURATION BADGE */
+.dur-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--teal-bg);color:var(--teal-text);margin-top:6px;}
 /* MOBILE */
 @media(max-width:767px){
   body{overflow:auto;height:auto;}
@@ -525,13 +550,20 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
 <div class="overlay" id="ev-modal"><div class="modal">
   <div class="mt"><span id="ev-mt-t">일정 추가</span><button class="mt-x" onclick="closeM('ev-modal')">✕</button></div>
   <div class="fr"><label>제목 *</label><input type="text" id="ev-title"></div>
-  <div class="toggle-row"><label class="toggle"><input type="checkbox" id="ev-allday" onchange="toggleEvAllday()"><span class="toggle-slider"></span></label><span class="toggle-lbl">종일</span></div>
-  <div class="fg2"><div class="fr"><label>날짜 *</label><input type="date" id="ev-date"></div><div class="fr" id="ev-st-row"><label>시작 시간</label><input type="time" id="ev-start"></div></div>
-  <div class="fr" id="ev-et-row"><label>종료 시간</label><input type="time" id="ev-end"></div>
+  <div class="toggle-row"><label class="toggle"><input type="checkbox" id="ev-allday" onchange="toggleEvAllday()"><span class="toggle-slider"></span></label><span class="toggle-lbl">종일 (All day)</span></div>
+  <div class="fg2" id="ev-start-row">
+    <div class="fr"><label>시작 날짜 *</label><input type="date" id="ev-start-date"></div>
+    <div class="fr"><label>시작 시간</label><div class="time-picker-wrap" id="ev-start-tp"></div></div>
+  </div>
+  <div class="fg2" id="ev-end-row">
+    <div class="fr"><label>종료 날짜</label><input type="date" id="ev-end-date"></div>
+    <div class="fr"><label>종료 시간</label><div class="time-picker-wrap" id="ev-end-tp"></div></div>
+  </div>
+  <div id="ev-dur-row" style="margin-bottom:14px;"></div>
   <div class="fg2"><div class="fr"><label>유형</label><select id="ev-type"><option>현장 점검</option><option>원격 지원</option><option>미팅</option><option>교육/세미나</option><option>내부 일정</option><option>기타</option></select></div><div class="fr"><label>관련 고객사</label><select id="ev-client"><option value="">없음</option></select></div></div>
   <div class="fr"><label>메모</label><textarea id="ev-memo"></textarea></div>
   <div class="fr"><label>태그</label><div class="tag-wrap" id="ev-tw"><input type="text" placeholder="Enter로 추가" id="ev-ti" onkeydown="tagKey(event,'ev')"></div></div>
-  <div class="mf"><button class="btn" onclick="closeM('ev-modal',true)">취소</button><button class="btn pr" onclick="saveEv()">저장</button></div>
+  <div class="mf"><button class="btn" onclick="closeM('ev-modal',true)">취소</button><button class="btn pr" onclick="saveEv()">💾 저장</button></div>
 </div></div>
 
 <div class="overlay" id="log-modal"><div class="modal">
@@ -574,12 +606,20 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
       <div class="ms-opt" onclick="toggleProd('기타')">기타</div>
     </div>
   </div>
-  <div class="toggle-row"><label class="toggle"><input type="checkbox" id="sp-allday" onchange="toggleSupAllday()"><span class="toggle-slider"></span></label><span class="toggle-lbl">종일</span></div>
-  <div class="fg2"><div class="fr"><label>요청일 *</label><input type="date" id="sp-req-date"></div><div class="fr"><label>처리 상태</label><select id="sp-status"><option value="open">미처리</option><option value="prog">처리중</option><option value="done">완료</option></select></div></div>
-  <div class="fg2" id="sp-time-row"><div class="fr"><label>시작 시간</label><input type="time" id="sp-start"></div><div class="fr"><label>종료 시간</label><input type="time" id="sp-end"></div></div>
+  <div class="toggle-row"><label class="toggle"><input type="checkbox" id="sp-allday" onchange="toggleSupAllday()"><span class="toggle-slider"></span></label><span class="toggle-lbl">종일 (All day)</span></div>
+  <div class="fr"><label>처리 상태</label><select id="sp-status"><option value="open">미처리</option><option value="prog">처리중</option><option value="done">완료</option></select></div>
+  <div class="fg2">
+    <div class="fr"><label>요청일 (시작) *</label><input type="date" id="sp-req-date"></div>
+    <div class="fr" id="sp-start-tp-row"><label>시작 시간</label><div class="time-picker-wrap" id="sp-start-tp"></div></div>
+  </div>
+  <div class="fg2" id="sp-end-row">
+    <div class="fr"><label>완료일 (종료)</label><input type="date" id="sp-done"></div>
+    <div class="fr" id="sp-end-tp-row"><label>종료 시간</label><div class="time-picker-wrap" id="sp-end-tp"></div></div>
+  </div>
+  <div id="sp-dur-row" style="margin-bottom:14px;"></div>
   <div class="fr"><label>요청/증상 내용</label><textarea id="sp-desc"></textarea></div>
   <div class="fr"><label>처리 내용 / 결과</label><textarea id="sp-result"></textarea></div>
-  <div class="fr"><label>완료일</label><input type="date" id="sp-done"></div>
+
   <div class="fr"><label>첨부파일명</label><input type="text" id="sp-files" placeholder="예: ha_failover.log"></div>
   <div class="fr"><label>태그</label><div class="tag-wrap" id="sp-tw"><input type="text" placeholder="Enter로 추가" id="sp-ti" onkeydown="tagKey(event,'sp')"></div></div>
   <div class="mf"><button class="btn" onclick="closeM('sup-modal',true)">취소</button><button class="btn pr" onclick="saveSup()">저장</button></div>
@@ -733,8 +773,8 @@ function initProds(prods){selProds=Array.isArray(prods)?[...prods]:[];renderProd
 document.addEventListener('click',e=>{const o=document.getElementById('sp-prod-opts'),c=document.getElementById('sp-prod-chips');if(o&&c&&!o.contains(e.target)&&!c.contains(e.target))o.style.display='none';});
 
 // ALLDAY TOGGLES
-window.toggleEvAllday=function(){const a=document.getElementById('ev-allday').checked;document.getElementById('ev-st-row').style.display=a?'none':'block';document.getElementById('ev-et-row').style.display=a?'none':'block';};
-window.toggleSupAllday=function(){const a=document.getElementById('sp-allday').checked;document.getElementById('sp-time-row').style.display=a?'none':'grid';};
+window.toggleEvAllday=function(){const a=document.getElementById('ev-allday').checked;document.getElementById('ev-start-row').style.display=a?'none':'grid';document.getElementById('ev-end-row').style.display=a?'none':'grid';document.getElementById('ev-dur-row').style.display=a?'none':'block';};
+window.toggleSupAllday=function(){const a=document.getElementById('sp-allday').checked;const rows=['sp-start-tp-row','sp-end-tp-row','sp-end-row','sp-dur-row'];rows.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=a?'none':(id==='sp-end-row'||id==='sp-start-tp-row'?'':id==='sp-dur-row'?'block':'');});document.getElementById('sp-end-row').style.display=a?'none':'grid';document.getElementById('sp-start-tp-row').style.display=a?'none':'block';document.getElementById('sp-end-tp-row').style.display=a?'none':'block';document.getElementById('sp-dur-row').style.display=a?'none':'block';};
 
 // HELPERS
 function stLbl(s){return{open:'미처리',prog:'처리중',done:'완료'}[s]||s;}
@@ -749,16 +789,16 @@ window.globalSearch=function(q){['pc-search','mob-search'].forEach(id=>{const el
 
 // DASHBOARD
 function renderDash(){const today=ymd(new Date()),d=new Date(),days=['일','월','화','수','목','금','토'];document.getElementById('dash-dt').textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+days[d.getDay()]+')';const openSup=D.support.filter(s=>s.status!=='done'),activeProj=D.projects.filter(p=>p.stage!=='done'&&p.stage!=='hold'),critKi=D.ki.filter(k=>k.sev==='C');document.getElementById('dash-stats').innerHTML='<div class="stat"><div class="sl">고객사</div><div class="sv">'+D.clients.length+'</div></div><div class="stat"><div class="sl">미처리 지원</div><div class="sv" style="color:var(--blue);">'+openSup.length+'</div></div><div class="stat"><div class="sl">진행중 프로젝트</div><div class="sv" style="color:var(--purple);">'+activeProj.length+'</div></div><div class="stat"><div class="sl">Critical 취약점</div><div class="sv" style="color:var(--red);">'+critKi.length+'</div></div>';renderMiniCal();renderWeek();document.getElementById('dash-sup').innerHTML=openSup.length?openSup.slice(0,4).map(s=>'<div class="ri"><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(s.title)+'</div><div style="font-size:11px;color:var(--text2);">'+esc(s.client)+' · '+s.reqDate+'</div></div><span class="badge '+(s.status==='open'?'b-open':'b-prog')+'">'+stLbl(s.status)+'</span></div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';document.getElementById('dash-proj').innerHTML=activeProj.length?activeProj.slice(0,4).map(p=>'<div class="ri"><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(p.title)+'</div><div style="font-size:11px;color:var(--text2);">'+esc(p.client)+'</div></div>'+stageBadge(p.stage)+'</div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';document.getElementById('dash-vuln').innerHTML=critKi.length?critKi.slice(0,3).map(k=>'<div class="ri"><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(k.title)+'</div><div style="font-size:11px;color:var(--text2);">'+esc(k.prod)+'</div></div></div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';document.getElementById('dash-logs').innerHTML=D.logs.length?D.logs.slice().reverse().slice(0,4).map(l=>'<div class="ri"><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(l.title)+'</div><div style="font-size:11px;color:var(--text2);">'+l.date+(l.client?' · '+esc(l.client):'')+'</div></div></div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';}
-function renderMiniCal(){const y=calD.getFullYear(),m=calD.getMonth(),days=['일','월','화','수','목','금','토'],head=document.getElementById('dash-cal-head');if(head)head.innerHTML=days.map(d=>'<div style="text-align:center;font-size:10px;color:var(--text3);padding:3px 0;">'+d+'</div>').join('');const first=new Date(y,m,1).getDay(),last=new Date(y,m+1,0).getDate(),today=ymd(new Date()),ed={};D.events.forEach(e=>{if(e.date&&e.date.startsWith(y+'-'+p2(m+1)))ed[e.date]=(ed[e.date]||0)+1;});let h='';const prev=new Date(y,m,0).getDate();for(let i=0;i<first;i++)h+='<div class="mini-cd oth">'+(prev-first+i+1)+'</div>';for(let d=1;d<=last;d++){const ds=y+'-'+p2(m+1)+'-'+p2(d),cnt=ed[ds]||0;let c='mini-cd';if(ds===today)c+=' tod';h+='<div class="'+c+'" style="position:relative;">'+d+(cnt?'<span class="cnt-badge">'+cnt+'</span>':'')+'</div>';}const rem=(7-((first+last)%7))%7;for(let i=1;i<=rem;i++)h+='<div class="mini-cd oth">'+i+'</div>';const body=document.getElementById('dash-cal-body');if(body)body.innerHTML=h;}
+function renderMiniCal(){const y=calD.getFullYear(),m=calD.getMonth(),days=['일','월','화','수','목','금','토'],head=document.getElementById('dash-cal-head');if(head)head.innerHTML=days.map((d,i)=>'<div style="text-align:center;font-size:10px;padding:3px 0;color:'+(i===0?'var(--red-text)':i===6?'var(--blue-text)':'var(--text3)')+'">'+d+'</div>').join('');const first=new Date(y,m,1).getDay(),last=new Date(y,m+1,0).getDate(),today=ymd(new Date()),ed={};D.events.forEach(e=>{if(e.date&&e.date.startsWith(y+'-'+p2(m+1)))ed[e.date]=(ed[e.date]||0)+1;});let h='';const prev=new Date(y,m,0).getDate();for(let i=0;i<first;i++)h+='<div class="mini-cd oth">'+(prev-first+i+1)+'</div>';for(let d=1;d<=last;d++){const ds=y+'-'+p2(m+1)+'-'+p2(d),cnt=ed[ds]||0;let c='mini-cd';if(ds===today)c+=' tod';h+='<div class="'+c+'" style="position:relative;">'+d+(cnt?'<span class="cnt-badge">'+cnt+'</span>':'')+'</div>';}const rem=(7-((first+last)%7))%7;for(let i=1;i<=rem;i++)h+='<div class="mini-cd oth">'+i+'</div>';const body=document.getElementById('dash-cal-body');if(body)body.innerHTML=h;}
 function renderWeek(){const today=ymd(new Date()),now=new Date(),day=now.getDay(),startDate=new Date(now),days=['일','월','화','수','목','금','토'];startDate.setDate(now.getDate()-day);let html='';for(let i=0;i<7;i++){const d=new Date(startDate);d.setDate(startDate.getDate()+i);const ds=ymd(d),isToday=ds===today,evs=D.events.filter(e=>e.date===ds).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));html+='<div class="week-col'+(isToday?' today':'')+'"><div class="week-col-hd">'+days[i]+' '+d.getDate()+'</div>'+evs.slice(0,3).map(e=>'<div class="week-ev '+(e.allday?'allday':'timed')+'" title="'+esc(e.title)+'">'+(e.allday?'':e.startTime?e.startTime.slice(0,5)+' ':'')+esc(e.title)+'</div>').join('')+(evs.length>3?'<div style="font-size:9px;color:var(--text3);">+'+(evs.length-3)+'건</div>':'')+'</div>';}const el=document.getElementById('dash-week');if(el)el.innerHTML=html;}
 
 // CALENDAR
-function renderCal(){const y=calD.getFullYear(),m=calD.getMonth(),days=['일','월','화','수','목','금','토'];document.getElementById('cal-title').textContent=y+'년 '+(m+1)+'월';document.getElementById('cal-head').innerHTML=days.map(d=>'<div class="cal-ch">'+d+'</div>').join('');const first=new Date(y,m,1).getDay(),last=new Date(y,m+1,0).getDate(),today=ymd(new Date()),evMap={};D.events.forEach(e=>{if(!evMap[e.date])evMap[e.date]=[];evMap[e.date].push(e);});let h='';const prev=new Date(y,m,0).getDate();for(let i=0;i<first;i++)h+='<div class="cal-cd oth">'+(prev-first+i+1)+'</div>';for(let d=1;d<=last;d++){const ds=y+'-'+p2(m+1)+'-'+p2(d);let c='cal-cd';if(ds===today)c+=' tod';if(ds===selD)c+=' sel';const evs=evMap[ds]||[],cnt=evs.length;h+='<div class="'+c+'" onclick="selDay(\''+ds+'\')" style="cursor:pointer;position:relative;"><div style="font-size:11px;font-weight:'+(ds===today?'700':'400')+';">'+d+'</div>'+(cnt?'<span class="cnt-badge">'+cnt+'</span>':'')+evs.slice(0,2).map(e=>'<div class="ev-pill '+(e.allday?'ev-allday':'ev-timed')+'">'+(e.allday?'종일 ':e.startTime?e.startTime.slice(0,5)+' ':'')+esc(e.title)+'</div>').join('')+(cnt>2?'<div style="font-size:9px;color:var(--text2);">+'+(cnt-2)+'건</div>':'')+'</div>';}const rem=(7-((first+last)%7))%7;for(let i=1;i<=rem;i++)h+='<div class="cal-cd oth">'+i+'</div>';document.getElementById('cal-body').innerHTML=h;renderDayEv();}
+function renderCal(){const y=calD.getFullYear(),m=calD.getMonth(),days=['일','월','화','수','목','금','토'];document.getElementById('cal-title').textContent=y+'년 '+(m+1)+'월';document.getElementById('cal-head').innerHTML=days.map((d,i)=>'<div class="cal-ch" style="'+(i===0?'color:var(--red);':i===6?'color:var(--blue)':'')+'">'+d+'</div>').join('');const first=new Date(y,m,1).getDay(),last=new Date(y,m+1,0).getDate(),today=ymd(new Date()),evMap={};D.events.forEach(e=>{if(!evMap[e.date])evMap[e.date]=[];evMap[e.date].push(e);});let h='';const prev=new Date(y,m,0).getDate();for(let i=0;i<first;i++)h+='<div class="cal-cd oth">'+(prev-first+i+1)+'</div>';for(let d=1;d<=last;d++){const ds=y+'-'+p2(m+1)+'-'+p2(d);const dow=(first+d-1)%7;let c='cal-cd';if(ds===today)c+=' tod';if(ds===selD)c+=' sel';const evs=evMap[ds]||[],cnt=evs.length;const dowColor=dow===0?'color:var(--red-text);':dow===6?'color:var(--blue-text);':'';h+='<div class="'+c+'" onclick="selDay(\''+ds+'\')" style="cursor:pointer;position:relative;"><div style="font-size:11px;font-weight:'+(ds===today?'700':'400')+';'+dowColor+'">'+d+'</div>'+(cnt?'<span class="cnt-badge">'+cnt+'</span>':'')+evs.slice(0,2).map(e=>'<div class="ev-pill '+(e.allday?'ev-allday':'ev-timed')+'">'+(e.allday?'종일 ':e.startTime?e.startTime.slice(0,5)+' ':'')+esc(e.title)+'</div>').join('')+(cnt>2?'<div style="font-size:9px;color:var(--text2);">+'+(cnt-2)+'건</div>':'')+'</div>';}const rem=(7-((first+last)%7))%7;for(let i=1;i<=rem;i++)h+='<div class="cal-cd oth">'+i+'</div>';document.getElementById('cal-body').innerHTML=h;renderDayEv();}
 window.selDay=function(d){selD=d;renderCal();};
 window.chMon=function(dir){calD.setMonth(calD.getMonth()+dir);renderCal();};
-function renderDayEv(){document.getElementById('cal-sel-lbl').textContent=selD+' 일정';const ev=D.events.filter(e=>e.date===selD);document.getElementById('cal-day-ev').innerHTML=ev.length?ev.map(e=>{const ts=e.allday?'종일':(e.startTime||'')+(e.endTime?' ~ '+e.endTime:'');return'<div class="ri"><div style="flex:1;"><div style="font-size:13px;font-weight:600;">'+esc(e.title)+'</div><div style="font-size:11px;color:var(--text2);">'+ts+(ts?' · ':'')+esc(e.type)+(e.client?' · '+esc(e.client):'')+'</div>'+(e.memo?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">'+esc(e.memo)+'</div>':'')+tagsHtml(e.tags)+'</div><div style="display:flex;gap:4px;"><button class="btn xs" onclick="openEvMod(\''+e.id+'\')">✏</button><button class="btn dg xs" onclick="delItem(\'events\',\''+e.id+'\',renderCal)">🗑</button></div></div>';}).join(''):'<div class="empty">일정 없음</div>';}
-window.openEvMod=function(id){eId.ev=id;document.getElementById('ev-mt-t').textContent=id?'일정 수정':'일정 추가';fillSel('ev-client',true);const e=id?D.events.find(x=>x.id===id):null;sv('ev-title',e?.title);sv('ev-date',e?.date||selD);document.getElementById('ev-allday').checked=e?.allday||false;sv('ev-start',e?.startTime);sv('ev-end',e?.endTime);sv('ev-type',e?.type||'현장 점검');sv('ev-client',e?.client);sv('ev-memo',e?.memo);initTags('ev',e?.tags||[]);toggleEvAllday();document.getElementById('ev-modal').classList.add('open');};
-window.saveEv=async function(){const t=v('ev-title');if(!t){showToast('제목을 입력해주세요');return;}const allday=document.getElementById('ev-allday').checked,obj={title:t,date:v('ev-date'),allday,startTime:allday?'':v('ev-start'),endTime:allday?'':v('ev-end'),type:v('ev-type'),client:v('ev-client'),memo:v('ev-memo'),tags:tmpTags.ev||[]};if(eId.ev){await fsUpd('events',eId.ev,{id:eId.ev,...obj});}else{await fsAdd('events',obj);}closeM('ev-modal',true);renderCal();if(document.getElementById('page-dash').classList.contains('active'))renderDash();showToast('일정이 저장되었습니다 ✓');};
+function renderDayEv(){document.getElementById('cal-sel-lbl').textContent=selD+' 일정';const ev=D.events.filter(e=>e.date===selD);document.getElementById('cal-day-ev').innerHTML=ev.length?ev.map(e=>{const ts=e.allday?'종일':((e.startDate&&e.startDate!==e.date?e.startDate+' ':'')+e.startTime+(e.endTime?' ~ '+(e.endDate&&e.endDate!==e.startDate?e.endDate+' ':'')+e.endTime:''));return'<div class="ri"><div style="flex:1;"><div style="font-size:13px;font-weight:600;">'+esc(e.title)+'</div><div style="font-size:11px;color:var(--text2);">'+ts+(ts?' · ':'')+esc(e.type)+(e.client?' · '+esc(e.client):'')+'</div>'+(e.memo?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">'+esc(e.memo)+'</div>':'')+tagsHtml(e.tags)+'</div><div style="display:flex;gap:4px;"><button class="btn xs" onclick="openEvMod(\''+e.id+'\')">✏</button><button class="btn dg xs" onclick="delItem(\'events\',\''+e.id+'\',renderCal)">🗑</button></div></div>';}).join(''):'<div class="empty">일정 없음</div>';}
+window.openEvMod=function(id){eId.ev=id;document.getElementById('ev-mt-t').textContent=id?'일정 수정':'일정 추가';fillSel('ev-client',true);const e=id?D.events.find(x=>x.id===id):null;sv('ev-title',e?.title);sv('ev-start-date',e?.startDate||e?.date||selD);sv('ev-end-date',e?.endDate||e?.startDate||e?.date||selD);document.getElementById('ev-allday').checked=e?.allday||false;sv('ev-type',e?.type||'현장 점검');sv('ev-client',e?.client);sv('ev-memo',e?.memo);initTags('ev',e?.tags||[]);toggleEvAllday();buildTimePicker('ev-start-tp','ev-start-time',e?.startTime||'',()=>calcEvDur());buildTimePicker('ev-end-tp','ev-end-time',e?.endTime||'',()=>calcEvDur());calcEvDur();document.getElementById('ev-modal').classList.add('open');};
+window.saveEv=async function(){const t=v('ev-title');if(!t){showToast('제목을 입력해주세요');return;}const allday=document.getElementById('ev-allday').checked,startDate=v('ev-start-date');if(!startDate){showToast('시작 날짜를 입력해주세요');return;}const endDate=v('ev-end-date')||startDate,startTime=getTPValue('ev-start-time'),endTime=getTPValue('ev-end-time'),dur=calcDuration(startDate,startTime,endDate,endTime),obj={title:t,date:startDate,startDate,endDate,allday,startTime:allday?'':startTime,endTime:allday?'':endTime,duration:allday?null:dur,type:v('ev-type'),client:v('ev-client'),memo:v('ev-memo'),tags:tmpTags.ev||[]};if(eId.ev){await fsUpd('events',eId.ev,{id:eId.ev,...obj});}else{await fsAdd('events',obj);}closeM('ev-modal',true);renderCal();if(document.getElementById('page-dash').classList.contains('active'))renderDash();showToast('일정이 저장되었습니다 ✓');};
 
 // WORKLOG
 function renderLog(){updSelects();const q=(v('log-search')||'').toLowerCase(),tf=document.getElementById('log-type-f').value,cf=document.getElementById('log-client-f').value,list=D.logs.filter(l=>(!q||(l.title+l.content+l.client).toLowerCase().includes(q))&&(!tf||l.type===tf)&&(!cf||l.client===cf));document.getElementById('log-list').innerHTML=list.length?list.slice().reverse().map(l=>'<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;"><div><div style="font-size:13px;font-weight:600;">'+esc(l.title)+'</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">'+l.date+' · <span style="background:var(--blue-bg);color:var(--blue-text);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;">'+esc(l.type||'고객사 지원')+'</span>'+(l.client?' · '+esc(l.client):'')+(l.autoFromSup?'<span style="font-size:10px;color:var(--green-text);background:var(--green-bg);padding:1px 6px;border-radius:10px;margin-left:4px;">자동생성</span>':'')+'</div></div><div style="display:flex;gap:4px;"><button class="btn xs" onclick="openLogMod(\''+l.id+'\')">✏</button><button class="btn dg xs" onclick="delItem(\'logs\',\''+l.id+'\',renderLog)">🗑</button></div></div>'+(l.content?'<div style="font-size:12px;margin-bottom:6px;">'+esc(l.content)+'</div>':'')+(l.action?'<div style="font-size:11px;color:var(--blue);background:var(--blue-bg);padding:5px 9px;border-radius:8px;">→ '+esc(l.action)+'</div>':'')+(l.filesNote?'<div style="font-size:11px;color:var(--text2);margin-top:5px;">📎 '+esc(l.filesNote)+'</div>':'')+tagsHtml(l.tags)+'</div>').join(''):'<div class="card"><div class="empty">업무일지가 없습니다</div></div>';}
@@ -772,8 +812,8 @@ window.saveKi=async function(){const t=v('ki-title');if(!t){showToast('제목을
 
 // SUPPORT
 function renderSup(){updSelects();const q=(v('sup-search')||'').toLowerCase(),cf=document.getElementById('sup-client-f').value,sf=document.getElementById('sup-status-f').value,list=D.support.filter(s=>(!q||(s.title+s.desc+s.client).toLowerCase().includes(q))&&(!cf||s.client===cf)&&(!sf||s.status===sf)),bMap={open:'b-open',prog:'b-prog',done:'b-done'};document.getElementById('sup-list').innerHTML=list.length?list.slice().reverse().map(s=>{const prods=Array.isArray(s.prods)?s.prods:(s.prod?[s.prod]:[]),ts=s.allday?'종일':(s.startTime||'')+(s.endTime?' ~ '+s.endTime:'');return'<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="font-size:13px;font-weight:600;">'+esc(s.title)+'</div><div style="font-size:11px;color:var(--text2);margin-top:1px;">'+esc(s.client)+' · '+esc(s.type)+' · 요청: '+s.reqDate+(ts?' · '+ts:'')+(s.doneDate&&s.status==='done'?' → 완료: '+s.doneDate:'')+'</div>'+(prods.length?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">📦 '+prods.map(p=>esc(p)).join(', ')+'</div>':'')+'</div><div style="display:flex;gap:5px;align-items:center;"><span class="badge '+(bMap[s.status]||'b-open')+'">'+stLbl(s.status)+'</span><button class="btn xs" onclick="openSupMod(\''+s.id+'\')">✏</button><button class="btn dg xs" onclick="delItem(\'support\',\''+s.id+'\',renderSup)">🗑</button></div></div>'+(s.desc?'<div style="font-size:12px;margin-bottom:6px;">'+esc(s.desc)+'</div>':'')+(s.result?'<div style="font-size:11px;color:var(--green-text);background:var(--green-bg);padding:5px 9px;border-radius:8px;">✓ '+esc(s.result)+'</div>':'')+(s.filesNote?'<div style="font-size:11px;color:var(--text2);margin-top:5px;">📎 '+esc(s.filesNote)+'</div>':'')+tagsHtml(s.tags)+'</div>';}).join(''):'<div class="card"><div class="empty">기술지원 내역이 없습니다</div></div>';}
-window.openSupMod=function(id){eId.sup=id;document.getElementById('sup-mt-t').textContent=id?'기술지원 수정':'기술지원 등록';fillSel('sp-client',false);const s=id?D.support.find(x=>x.id===id):null;sv('sp-client',s?.client);sv('sp-type',s?.type||'장애 처리');sv('sp-title',s?.title);sv('sp-req-date',s?.reqDate||ymd(new Date()));sv('sp-status',s?.status||'open');initProds(s?.prods||(s?.prod?[s.prod]:[]));document.getElementById('sp-allday').checked=s?.allday||false;sv('sp-start',s?.startTime);sv('sp-end',s?.endTime);sv('sp-desc',s?.desc);sv('sp-result',s?.result);sv('sp-done',s?.doneDate);sv('sp-files',s?.filesNote);initTags('sp',s?.tags||[]);toggleSupAllday();document.getElementById('sp-prod-opts').style.display='none';document.getElementById('sup-modal').classList.add('open');};
-window.saveSup=async function(){const t=v('sp-title');if(!t){showToast('제목을 입력해주세요');return;}const allday=document.getElementById('sp-allday').checked,obj={client:v('sp-client'),type:v('sp-type'),title:t,reqDate:v('sp-req-date'),status:v('sp-status'),prods:selProds,allday,startTime:allday?'':v('sp-start'),endTime:allday?'':v('sp-end'),desc:v('sp-desc'),result:v('sp-result'),doneDate:v('sp-done'),filesNote:v('sp-files'),tags:tmpTags.sp||[]};let saved;if(eId.sup){await fsUpd('support',eId.sup,{id:eId.sup,...obj});saved={id:eId.sup,...obj};}else{saved=await fsAdd('support',obj);}await autoCreateLog(saved);closeM('sup-modal',true);renderSup();showToast('기술지원이 저장되었습니다 ✓');};
+window.openSupMod=function(id){eId.sup=id;document.getElementById('sup-mt-t').textContent=id?'기술지원 수정':'기술지원 등록';fillSel('sp-client',false);const s=id?D.support.find(x=>x.id===id):null;sv('sp-client',s?.client);sv('sp-type',s?.type||'장애 처리');sv('sp-title',s?.title);sv('sp-req-date',s?.reqDate||ymd(new Date()));sv('sp-status',s?.status||'open');initProds(s?.prods||(s?.prod?[s.prod]:[]));document.getElementById('sp-allday').checked=s?.allday||false;sv('sp-desc',s?.desc);sv('sp-result',s?.result);sv('sp-files',s?.filesNote);initTags('sp',s?.tags||[]);toggleSupAllday();buildTimePicker('sp-start-tp','sp-start-time',s?.startTime||'',()=>calcSupDur());buildTimePicker('sp-end-tp','sp-end-time',s?.endTime||'',()=>calcSupDur());sv('sp-done',s?.doneDate||s?.reqDate||ymd(new Date()));calcSupDur();document.getElementById('sp-prod-opts').style.display='none';document.getElementById('sup-modal').classList.add('open');};
+window.saveSup=async function(){const t=v('sp-title');if(!t){showToast('제목을 입력해주세요');return;}const reqDate=v('sp-req-date');if(!reqDate){showToast('요청일을 입력해주세요');return;}const allday=document.getElementById('sp-allday').checked,startTime=getTPValue('sp-start-time'),endTime=getTPValue('sp-end-time'),doneDate=v('sp-done'),dur=allday?null:calcDuration(reqDate,startTime,doneDate||reqDate,endTime),obj={client:v('sp-client'),type:v('sp-type'),title:t,reqDate,status:v('sp-status'),prods:selProds,allday,startTime:allday?'':startTime,endTime:allday?'':endTime,doneDate:doneDate||reqDate,duration:dur,desc:v('sp-desc'),result:v('sp-result'),filesNote:v('sp-files'),tags:tmpTags.sp||[]};let saved;if(eId.sup){await fsUpd('support',eId.sup,{id:eId.sup,...obj});saved={id:eId.sup,...obj};}else{saved=await fsAdd('support',obj);}await autoCreateLog(saved);closeM('sup-modal',true);renderSup();showToast('기술지원이 저장되었습니다 ✓');};
 async function autoCreateLog(sup){if(!sup.title||!sup.reqDate)return;const existing=D.logs.find(l=>l.autoFromSup===sup.id);const ts=sup.allday?'종일':(sup.startTime||'')+(sup.endTime?' ~ '+sup.endTime:'');const obj={date:sup.reqDate,type:'고객사 지원',client:sup.client||'',title:'[기술지원] '+sup.title,content:(ts?'시간: '+ts+'\n':'')+(sup.desc||''),action:sup.result||'',filesNote:sup.filesNote||'',tags:sup.tags||[],autoFromSup:sup.id};if(existing){await fsUpd('logs',existing.id,{id:existing.id,...obj});}else{await fsAdd('logs',obj);}if(document.getElementById('page-worklog')?.classList.contains('active'))renderLog();}
 
 // PROJECTS
@@ -805,6 +845,143 @@ window.exportPDF=function(){const type=v('pdf-type'),from=v('pdf-from'),to=v('pd
 window.previewReport=function(){const from=v('rpt-from'),to=v('rpt-to');if(!from||!to){showToast('기간을 선택해주세요');return;}const logs=fDate(D.logs,'rpt-from','rpt-to','date'),sups=fDate(D.support,'rpt-from','rpt-to','reqDate'),byType={},byClient={};logs.forEach(l=>{const t=l.type||'고객사 지원';byType[t]=(byType[t]||0)+1;});sups.forEach(s=>{byClient[s.client]=(byClient[s.client]||0)+1;});const maxC=Math.max(...Object.values(byClient),1);let html='<div style="border-top:1px solid var(--border);padding-top:16px;"><div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text);">📋 '+from+' ~ '+to+' 업무 요약</div><div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px;"><div class="stat"><div class="sl">업무일지</div><div class="sv" style="color:var(--blue);">'+logs.length+'</div></div><div class="stat"><div class="sl">기술지원</div><div class="sv" style="color:var(--green);">'+sups.length+'</div></div><div class="stat"><div class="sl">지원 완료</div><div class="sv" style="color:var(--green);">'+sups.filter(s=>s.status==='done').length+'</div></div></div>';if(Object.keys(byType).length){html+='<div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text);">업무 유형별</div>';Object.entries(byType).forEach(([t,c])=>{html+='<div class="report-bar"><div class="bar-label">'+esc(t)+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(c/logs.length*100).toFixed(0)+'%;"></div></div><div class="bar-val">'+c+'건</div></div>';});}if(Object.keys(byClient).length){html+='<div style="font-size:12px;font-weight:600;margin:12px 0 8px;color:var(--text);">고객사별 기술지원</div>';Object.entries(byClient).sort((a,b)=>b[1]-a[1]).forEach(([c,n])=>{html+='<div class="report-bar"><div class="bar-label">'+esc(c||'미지정')+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(n/maxC*100).toFixed(0)+'%;background:var(--green);"></div></div><div class="bar-val">'+n+'건</div></div>';});}html+='</div>';document.getElementById('report-preview').innerHTML=html;};
 window.exportReportExcel=function(){if(typeof XLSX==='undefined'){showToast('로딩 중...');return;}const from=v('rpt-from'),to=v('rpt-to');if(!from||!to){showToast('기간을 선택해주세요');return;}const wb=XLSX.utils.book_new(),logs=fDate(D.logs,'rpt-from','rpt-to','date'),sups=fDate(D.support,'rpt-from','rpt-to','reqDate');if(logs.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(logs.map(l=>({'날짜':l.date,'유형':l.type,'고객사':l.client||'','제목':l.title,'내용':l.content||'','조치':l.action||''}))), '업무일지');if(sups.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sups.map(s=>({'요청일':s.reqDate,'고객사':s.client,'제목':s.title,'유형':s.type,'제품':(s.prods||[]).join(', '),'상태':stLbl(s.status),'요청':s.desc||'','결과':s.result||''}))), '기술지원');if(!logs.length&&!sups.length){showToast('데이터가 없습니다');return;}XLSX.writeFile(wb,'업무리포트_'+from.replace(/-/g,'')+'_'+to.replace(/-/g,'')+'.xlsx');showToast('리포트 Excel 완료 ✓');};
 window.exportReportPDF=function(){const from=v('rpt-from'),to=v('rpt-to');if(!from||!to){showToast('기간을 선택해주세요');return;}const logs=fDate(D.logs,'rpt-from','rpt-to','date'),sups=fDate(D.support,'rpt-from','rpt-to','reqDate'),mi=D.myinfo,user=(mi.name||'')+(mi.company?' / '+mi.company:'')+(mi.title?' / '+mi.title:''),byType={};logs.forEach(l=>{const t=l.type||'고객사 지원';byType[t]=(byType[t]||0)+1;});const html='<h1>업무 리포트</h1><p style="color:#666;">기간: '+from+' ~ '+to+'</p><p style="color:#666;margin-bottom:20px;">작성자: '+user+'</p><div style="display:flex;gap:12px;margin-bottom:20px;"><div style="flex:1;background:#e8f0fd;border-radius:8px;padding:14px;text-align:center;"><div style="font-size:24px;font-weight:700;color:#1a6fd8;">'+logs.length+'</div><div style="font-size:11px;">업무일지</div></div><div style="flex:1;background:#e6f7ee;border-radius:8px;padding:14px;text-align:center;"><div style="font-size:24px;font-weight:700;color:#1a9e5c;">'+sups.length+'</div><div style="font-size:11px;">기술지원</div></div><div style="flex:1;background:#e6f7ee;border-radius:8px;padding:14px;text-align:center;"><div style="font-size:24px;font-weight:700;color:#1a9e5c;">'+sups.filter(s=>s.status==='done').length+'</div><div style="font-size:11px;">지원 완료</div></div></div>'+(Object.keys(byType).length?'<h2 style="font-size:14px;font-weight:700;margin-bottom:10px;border-bottom:1px solid #eee;padding-bottom:6px;">업무 유형별</h2><table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;"><thead><tr style="background:#f0f2f5;"><th style="padding:6px;border:1px solid #ddd;text-align:left;">유형</th><th style="padding:6px;border:1px solid #ddd;text-align:center;">건수</th></tr></thead><tbody>'+Object.entries(byType).map(([t,c])=>'<tr><td style="padding:6px;border:1px solid #ddd;">'+esc(t)+'</td><td style="padding:6px;border:1px solid #ddd;text-align:center;">'+c+'</td></tr>').join('')+'</tbody></table>':'')+  (logs.length?'<h2 style="font-size:14px;font-weight:700;margin-bottom:10px;border-bottom:1px solid #eee;padding-bottom:6px;">업무일지</h2>'+logs.map(l=>'<div style="border:1px solid #e0e0e0;border-radius:6px;padding:10px;margin-bottom:8px;page-break-inside:avoid;"><div style="font-size:13px;font-weight:700;">'+esc(l.title)+'</div><div style="font-size:11px;color:#888;margin:3px 0 5px;">'+l.date+' · '+esc(l.type||'')+(l.client?' · '+esc(l.client):'')+'</div>'+(l.content?'<div style="font-size:12px;white-space:pre-wrap;">'+esc(l.content)+'</div>':'')+(l.action?'<div style="font-size:11px;color:#1a6fd8;margin-top:4px;">→ '+esc(l.action)+'</div>':'')+'</div>').join(''):'');const win=window.open('','_blank');win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;padding:30px;color:#1a1d23;max-width:900px;margin:0 auto;}h1{font-size:20px;font-weight:700;margin-bottom:4px;}@media print{body{padding:10px;}}</style></head><body>'+html+'<scr'+'ipt>window.onload=function(){window.print();};<\/scr'+'ipt></body></html>');win.document.close();};
+
+// ── TIME PICKER ENGINE ──
+const tpState={};
+
+function buildTimePicker(containerId, stateKey, initialVal){
+  const wrap=document.getElementById(containerId);if(!wrap)return;
+  tpState[stateKey]=parseTimeStr(initialVal);
+  const display=document.createElement('div');
+  display.className='time-display';display.id=stateKey+'-display';
+  display.onclick=function(e){e.stopPropagation();toggleTP(stateKey,containerId,onChange);};
+  const popup=document.createElement('div');
+  popup.className='time-popup';popup.id=stateKey+'-popup';
+  popup.innerHTML=buildTPHTML(stateKey);
+  popup.onclick=function(e){e.stopPropagation();};
+  wrap.innerHTML='';wrap.appendChild(display);wrap.appendChild(popup);
+  updateTPDisplay(stateKey);
+}
+
+function buildTPHTML(key){
+  const h=p2((tpState[key]||{h:0}).h),m2=p2((tpState[key]||{m:0}).m);
+  const k=key;
+  return '<div class="time-cols"><div class="time-col"><label>시</label><div class="time-spin">'+
+    '<button class="time-spin-btn" onclick="spinTP(\''+k+'\',\'h\',1)">▲</button>'+
+    '<input class="time-spin-input" id="'+k+'-h" type="text" maxlength="2" value="'+h+'" oninput="syncTPInput(\''+k+'\',\'h\',this.value)" onblur="fixTPInput(\''+k+'\',\'h\')">'+
+    '<button class="time-spin-btn" onclick="spinTP(\''+k+'\',\'h\',-1)">▼</button>'+
+    '</div></div><div class="time-sep">:</div>'+
+    '<div class="time-col"><label>분</label><div class="time-spin">'+
+    '<button class="time-spin-btn" onclick="spinTP(\''+k+'\',\'m\',1)">▲</button>'+
+    '<input class="time-spin-input" id="'+k+'-m" type="text" maxlength="2" value="'+m2+'" oninput="syncTPInput(\''+k+'\',\'m\',this.value)" onblur="fixTPInput(\''+k+'\',\'m\')">'+
+    '<button class="time-spin-btn" onclick="spinTP(\''+k+'\',\'m\',-1)">▼</button>'+
+    '</div></div></div>'+
+    '<button class="time-confirm-btn" onclick="confirmTP(\''+k+'\')">✓ 확인</button>'+
+    '<button class="time-clear-btn" onclick="clearTP(\''+k+'\')">지우기</button>';
+}
+
+function parseTimeStr(str){if(!str||str==='')return null;const parts=str.split(':');const h=parseInt(parts[0]||'0',10),m=parseInt(parts[1]||'0',10);return{h:isNaN(h)?0:Math.min(23,Math.max(0,h)),m:isNaN(m)?0:Math.min(59,Math.max(0,m))};}
+function getTPValue(key){const s=tpState[key];if(!s)return '';return p2(s.h)+':'+p2(s.m);}
+
+function toggleTP(key,containerId,onChange){
+  const popup=document.getElementById(key+'-popup'),display=document.getElementById(key+'-display');
+  const isOpen=popup.classList.contains('open');
+  // close all other pickers
+  document.querySelectorAll('.time-popup.open').forEach(el=>el.classList.remove('open'));
+  document.querySelectorAll('.time-display.open').forEach(el=>el.classList.remove('open'));
+  if(!isOpen){popup.classList.add('open');display.classList.add('open');}
+}
+
+function spinTP(key,field,dir){
+  if(!tpState[key])tpState[key]={h:0,m:0};
+  const s=tpState[key];
+  if(field==='h'){s.h=(s.h+dir+24)%24;}
+  else{s.m=(s.m+dir+60)%60;}
+  updateTPInputs(key);updateTPDisplay(key);
+}
+
+function syncTPInput(key,field,val){
+  if(!tpState[key])tpState[key]={h:0,m:0};
+  const n=parseInt(val,10);
+  if(!isNaN(n)){if(field==='h')tpState[key].h=n;else tpState[key].m=n;}
+  updateTPDisplay(key);
+}
+
+function fixTPInput(key,field){
+  if(!tpState[key])tpState[key]={h:0,m:0};
+  const s=tpState[key];
+  if(field==='h')s.h=Math.min(23,Math.max(0,s.h||0));
+  else s.m=Math.min(59,Math.max(0,s.m||0));
+  updateTPInputs(key);updateTPDisplay(key);
+}
+
+function updateTPInputs(key){
+  const s=tpState[key]||{h:0,m:0};
+  const hi=document.getElementById(key+'-h'),mi=document.getElementById(key+'-m');
+  if(hi)hi.value=p2(s.h);if(mi)mi.value=p2(s.m);
+}
+
+function updateTPDisplay(key){
+  const display=document.getElementById(key+'-display');if(!display)return;
+  const s=tpState[key];
+  if(s){display.innerHTML='<span class="time-val">'+p2(s.h)+' : '+p2(s.m)+'</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';}
+  else{display.innerHTML='<span class="time-placeholder">시간 선택</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';}
+}
+
+function confirmTP(key){
+  fixTPInput(key,'h');fixTPInput(key,'m');
+  const popup=document.getElementById(key+'-popup'),display=document.getElementById(key+'-display');
+  if(popup)popup.classList.remove('open');if(display)display.classList.remove('open');
+  updateTPDisplay(key);calcEvDur();calcSupDur();
+}
+
+function clearTP(key){
+  tpState[key]=null;
+  const popup=document.getElementById(key+'-popup'),display=document.getElementById(key+'-display');
+  if(popup)popup.classList.remove('open');if(display)display.classList.remove('open');
+  updateTPDisplay(key);
+  const hi=document.getElementById(key+'-h'),mi=document.getElementById(key+'-m');
+  if(hi)hi.value='00';if(mi)mi.value='00';
+  calcEvDur();calcSupDur();
+}
+
+// Close pickers on outside click
+document.addEventListener('click',function(){
+  document.querySelectorAll('.time-popup.open').forEach(el=>el.classList.remove('open'));
+  document.querySelectorAll('.time-display.open').forEach(el=>el.classList.remove('open'));
+});
+
+// DURATION CALC
+function calcDuration(startDate,startTime,endDate,endTime){
+  if(!startDate||!startTime||!endDate||!endTime)return null;
+  try{
+    const sd=new Date(startDate+'T'+startTime+':00'),ed=new Date(endDate+'T'+endTime+':00');
+    const diff=(ed-sd)/1000/60;if(diff<=0)return null;
+    const h=Math.floor(diff/60),m=diff%60;
+    return{totalMin:diff,h,m,label:h>0?(h+'시간'+(m>0?' '+m+'분':'')):(m+'분')};
+  }catch(e){return null;}
+}
+
+function calcEvDur(){
+  const sd=v('ev-start-date'),ed=v('ev-end-date'),st=getTPValue('ev-start-time'),et=getTPValue('ev-end-time');
+  const dur=calcDuration(sd,st,ed||sd,et);
+  const row=document.getElementById('ev-dur-row');if(!row)return;
+  row.innerHTML=dur?'<span class="dur-badge">⏱ 소요시간: '+dur.label+'</span>':'';
+}
+
+function calcSupDur(){
+  const sd=v('sp-req-date'),ed=v('sp-done'),st=getTPValue('sp-start-time'),et=getTPValue('sp-end-time');
+  const dur=calcDuration(sd,st,ed||sd,et);
+  const row=document.getElementById('sp-dur-row');if(!row)return;
+  row.innerHTML=dur?'<span class="dur-badge">⏱ 소요시간: '+dur.label+'</span>':'';
+}
+
+// Listen to date changes for duration recalc
+document.addEventListener('change',function(e){
+  if(['ev-start-date','ev-end-date'].includes(e.target.id))calcEvDur();
+  if(['sp-req-date','sp-done'].includes(e.target.id))calcSupDur();
+});
+
 </script>
 </body>
 </html>
