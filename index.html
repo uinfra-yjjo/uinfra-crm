@@ -345,14 +345,6 @@ label{font-size:11px;color:var(--text2);display:block;margin-bottom:4px;font-wei
 <script>
 
 // ↓↓↓ 아래 firebaseConfig 를 본인 것으로 교체하세요 ↓↓↓
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCjp3XZAiuEATyC5eIf1dzN0A2hi4tDyNs",
   authDomain: "u-infra-office-management.firebaseapp.com",
@@ -362,10 +354,6 @@ const firebaseConfig = {
   appId: "1:528068466624:web:8ed847b85dbe9d86e1da25",
   measurementId: "G-8TRDGG8Q67"
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 // ↑↑↑ 여기까지 교체 ↑↑↑
 
 firebase.initializeApp(firebaseConfig);
@@ -393,8 +381,12 @@ function showToast(msg) {
 
 // ── 인증 ──
 window.loginWithGoogle = async function() {
-  try { await auth.signInWithPopup(provider); }
-  catch(e) { showToast('로그인 실패: ' + e.message); }
+  try {
+    // 모바일/팝업차단 환경 모두 대응: redirect 방식 사용
+    await auth.signInWithRedirect(provider);
+  } catch(e) {
+    showToast('로그인 실패: ' + e.message);
+  }
 };
 
 window.logout = async function() {
@@ -403,6 +395,15 @@ window.logout = async function() {
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
 };
+
+// redirect 후 결과 처리
+auth.getRedirectResult().then(result => {
+  // redirect 결과 처리됨 (onAuthStateChanged가 이어서 처리)
+}).catch(e => {
+  if (e.code !== 'auth/credential-already-in-use') {
+    showToast('로그인 오류: ' + e.message);
+  }
+});
 
 auth.onAuthStateChanged(async user => {
   if (user) {
