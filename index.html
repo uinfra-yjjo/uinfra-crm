@@ -382,10 +382,19 @@ function showToast(msg) {
 // ── 인증 ──
 window.loginWithGoogle = async function() {
   try {
-    // 모바일/팝업차단 환경 모두 대응: redirect 방식 사용
-    await auth.signInWithRedirect(provider);
+    // PC: 팝업 방식 시도
+    await auth.signInWithPopup(provider);
   } catch(e) {
-    showToast('로그인 실패: ' + e.message);
+    if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
+      // 팝업 차단 시 redirect 방식으로 전환
+      try {
+        await auth.signInWithRedirect(provider);
+      } catch(e2) {
+        showToast('로그인 실패: ' + e2.message);
+      }
+    } else {
+      showToast('로그인 실패: ' + e.code);
+    }
   }
 };
 
