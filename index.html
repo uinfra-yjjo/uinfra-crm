@@ -169,6 +169,13 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
 .tag-wrap input{border:none;outline:none;font-size:13px;background:transparent;color:var(--text);min-width:80px;flex:1;padding:2px 0;}
 /* STATS */
 .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.stat-group{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:12px 14px;}
+.stat-group-title{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.stat-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.stat-chip{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s;min-width:60px;flex:1;}
+.stat-chip:hover{border-color:var(--blue);background:var(--blue-bg);transform:translateY(-1px);}
+.stat-chip-val{font-size:18px;font-weight:700;color:var(--text);line-height:1.1;}
+.stat-chip-lbl{font-size:10px;color:var(--text2);margin-top:3px;text-align:center;white-space:nowrap;}
 .stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:14px 16px;transition:all .15s;}
 .stat.stat-link{cursor:pointer;}
 .stat.stat-link:hover{border-color:var(--blue);box-shadow:0 2px 10px rgba(26,111,216,.12);transform:translateY(-1px);}
@@ -375,7 +382,7 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
 <div class="main" id="main-wrap">
 <div id="page-dash" class="page active">
   <div class="tb"><div><div class="ptitle">대시보드</div><div class="psub" id="dash-dt"></div></div></div>
-  <div class="stat-grid" id="dash-stats"></div>
+  <div class="stat-grid" id="dash-stats" style="grid-template-columns:repeat(4,1fr);"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;" id="dash-top">
     <div class="card">
       <div class="sh"><h3>📅 이번 달 일정</h3><button class="btn xs ghost" onclick="go('cal')">전체 →</button></div>
@@ -476,7 +483,27 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
   <input type="text" id="cl-search" placeholder="고객사 검색..." oninput="renderCl()" style="width:220px;margin-bottom:12px;">
   <div id="cl-list"></div>
 </div>
-<div id="page-report" class="page"><div class="tb"><div class="ptitle">통계 / 리포트</div></div><div id="report-content"></div></div>
+<div id="page-report" class="page">
+  <div class="tb"><div><div class="ptitle">통계 / 리포트</div></div></div>
+  <div class="card" style="margin-bottom:14px;">
+    <div class="sh"><h3>📊 기술지원 기간별 통계</h3></div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+      <div style="display:flex;gap:4px;">
+        <button class="btn sm" id="rpt-btn-all" onclick="setRptPeriod('all')" style="background:var(--blue);color:#fff;border-color:var(--blue);">전체</button>
+        <button class="btn sm" id="rpt-btn-month" onclick="setRptPeriod('month')">이번 달</button>
+        <button class="btn sm" id="rpt-btn-week" onclick="setRptPeriod('week')">이번 주</button>
+        <button class="btn sm" id="rpt-btn-day" onclick="setRptPeriod('day')">오늘</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;margin-left:auto;">
+        <input type="date" id="rpt-custom-from" style="width:130px;font-size:12px;padding:6px 8px;" onchange="setRptPeriod('custom')">
+        <span style="font-size:12px;color:var(--text3);">~</span>
+        <input type="date" id="rpt-custom-to" style="width:130px;font-size:12px;padding:6px 8px;" onchange="setRptPeriod('custom')">
+      </div>
+    </div>
+    <div id="rpt-period-stats"></div>
+  </div>
+  <div id="report-content"></div>
+</div>
 <div id="page-export" class="page">
   <div class="tb"><div><div class="ptitle">내보내기</div><div class="psub">Excel · PDF · 기간별 리포트</div></div></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
@@ -829,7 +856,51 @@ window.delItem=async function(col,id,cb){if(!confirm('삭제할까요?'))return;
 window.globalSearch=function(q){['pc-search','mob-search'].forEach(id=>{const el=document.getElementById(id);if(el&&el.value!==q)el.value=q;});if(!q){go('dash');return;}go('search');q=q.toLowerCase();const res={events:[],logs:[],ki:[],support:[],projects:[],clients:[]};D.events.forEach(e=>{if((e.title+e.memo+e.client).toLowerCase().includes(q))res.events.push(e);});D.logs.forEach(l=>{if((l.title+l.content+l.client).toLowerCase().includes(q))res.logs.push(l);});D.ki.forEach(k=>{if((k.title+k.desc+k.cve+k.prod).toLowerCase().includes(q))res.ki.push(k);});D.support.forEach(s=>{if((s.title+s.desc+s.client).toLowerCase().includes(q))res.support.push(s);});D.projects.forEach(p=>{if((p.title+p.client+p.prod).toLowerCase().includes(q))res.projects.push(p);});D.clients.forEach(c=>{if((c.name+c.contact+c.memo).toLowerCase().includes(q))res.clients.push(c);});const total=Object.values(res).reduce((a,b)=>a+b.length,0);document.getElementById('search-sub').textContent='"'+q+'" 검색 결과 '+total+'건';let html='';if(res.clients.length)html+='<div class="sr-section"><div class="sr-title">🏢 고객사</div>'+res.clients.map(c=>'<div class="sr-item" onclick="openClDetail(\''+c.id+'\')"><h4>'+esc(c.name)+'</h4><p>'+esc(c.industry)+' · '+esc(c.contact)+'</p></div>').join('')+'</div>';if(res.projects.length)html+='<div class="sr-section"><div class="sr-title">🚀 프로젝트</div>'+res.projects.map(p=>'<div class="sr-item" onclick="openProjDetail(\''+p.id+'\')"><h4>'+esc(p.title)+'</h4><p>'+esc(p.client)+'</p></div>').join('')+'</div>';if(res.support.length)html+='<div class="sr-section"><div class="sr-title">🔧 기술지원</div>'+res.support.map(s=>'<div class="sr-item" onclick="openSupMod(\''+s.id+'\')"><h4>'+esc(s.title)+'</h4><p>'+esc(s.client)+' · '+s.reqDate+'</p></div>').join('')+'</div>';if(res.ki.length)html+='<div class="sr-section"><div class="sr-title">🛡 이슈</div>'+res.ki.map(k=>'<div class="sr-item" onclick="openKiMod(\''+k.id+'\')"><h4>'+esc(k.title)+'</h4><p>'+esc(k.prod)+'</p></div>').join('')+'</div>';if(res.logs.length)html+='<div class="sr-section"><div class="sr-title">📋 업무일지</div>'+res.logs.map(l=>'<div class="sr-item" onclick="openLogMod(\''+l.id+'\')"><h4>'+esc(l.title)+'</h4><p>'+l.date+'</p></div>').join('')+'</div>';if(!total)html='<div class="empty">검색 결과가 없습니다</div>';document.getElementById('search-results').innerHTML=html;};
 
 // DASHBOARD
-function renderDash(){const today=ymd(new Date()),d=new Date(),days=['일','월','화','수','목','금','토'];document.getElementById('dash-dt').textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+days[d.getDay()]+')';const openSup=D.support.filter(s=>s.status!=='done'),activeProj=D.projects.filter(p=>p.stage!=='done'&&p.stage!=='hold'),critKi=D.ki.filter(k=>k.sev==='C');const statsEl=document.getElementById('dash-stats');statsEl.innerHTML='<div class="stat stat-link" data-action="clients"><div class="sl">고객사</div><div class="sv">'+D.clients.length+'</div></div>'+'<div class="stat stat-link" data-action="sup-open"><div class="sl">미처리 지원</div><div class="sv" style="color:var(--blue);">'+openSup.length+'</div></div>'+'<div class="stat stat-link" data-action="proj-active"><div class="sl">진행중 프로젝트</div><div class="sv" style="color:var(--purple);">'+activeProj.length+'</div></div>'+'<div class="stat stat-link" data-action="ki-critical"><div class="sl">Critical 취약점</div><div class="sv" style="color:var(--red);">'+critKi.length+'</div></div>';statsEl.querySelectorAll('.stat-link').forEach(el=>{el.addEventListener('click',()=>handleStatClick(el.dataset.action));});renderMiniCal();renderWeek();document.getElementById('dash-sup').innerHTML=openSup.length?openSup.slice(0,4).map(s=>'<div class="ri" style="cursor:pointer;" onclick=\'openSupDetail(\'+s.id+\')\'><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(s.title)+'</div><div style="font-size:11px;color:var(--text2);">'+esc(s.client)+' · '+s.reqDate+'</div></div><span class="badge '+(s.status==='open'?'b-open':'b-prog')+'">'+stLbl(s.status)+'</span></div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';document.getElementById('dash-proj').innerHTML=activeProj.length?activeProj.slice(0,4).map(p=>'<div class="ri" style="cursor:pointer;" onclick=\'openProjDetail(\'+p.id+\')\'><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(p.title)+'</div><div style="font-size:11px;color:var(--text2);">'+esc(p.client)+'</div></div>'+stageBadge(p.stage)+'</div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';document.getElementById('dash-vuln').innerHTML=critKi.length?critKi.slice(0,3).map(k=>'<div class="ri" style="cursor:pointer;" onclick=\'openKiDetail(\'+k.id+\')\'><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(k.title)+'</div><div style="font-size:11px;color:var(--text2);">'+esc(k.prod)+'</div></div><span class="badge sev-C">Critical</span></div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';document.getElementById('dash-logs').innerHTML=D.logs.length?D.logs.slice().reverse().slice(0,4).map(l=>'<div class="ri" style="cursor:pointer;" onclick=\'openLogDetail(\'+l.id+\')\'><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(l.title)+'</div><div style="font-size:11px;color:var(--text2);">'+l.date+(l.client?' · '+esc(l.client):'')+'</div></div></div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';}
+function renderDash(){const today=ymd(new Date()),d=new Date(),days=['일','월','화','수','목','금','토'];document.getElementById('dash-dt').textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+days[d.getDay()]+')';const openSup=D.support.filter(s=>s.status!=='done'),activeProj=D.projects.filter(p=>p.stage!=='done'&&p.stage!=='hold'),critKi=D.ki.filter(k=>k.sev==='C');
+  // Grouped counts
+  const clActive=D.clients.filter(c=>{const hasSup=D.support.some(s=>s.client===c.name&&s.status!=='done');return hasSup;}).length;
+  const clProj=D.clients.filter(c=>D.projects.some(p=>p.client===c.name&&p.stage!=='done'&&p.stage!=='hold')).length;
+  const supOpen=D.support.filter(s=>s.status==='open').length;
+  const supDone=D.support.filter(s=>s.status==='done').length;
+  const projPlan=D.projects.filter(p=>['prop','poc','bmt'].includes(p.stage)).length;
+  const projProg=D.projects.filter(p=>p.stage==='deploy').length;
+  const projEnd=D.projects.filter(p=>['done','hold'].includes(p.stage)).length;
+  const kiC=D.ki.filter(k=>k.sev==='C').length;
+  const kiH=D.ki.filter(k=>k.sev==='H').length;
+  const kiOther=D.ki.filter(k=>!['C','H'].includes(k.sev)).length;
+  const statsEl=document.getElementById('dash-stats');
+  statsEl.innerHTML=
+    '<div class="stat-group">'+
+      '<div class="stat-group-title">🏢 고객사 <span style="font-weight:400;color:var(--text3);">('+D.clients.length+')</span></div>'+
+      '<div class="stat-chips">'+
+        '<div class="stat-chip" data-action="cl-active"><div class="stat-chip-val">'+clActive+'</div><div class="stat-chip-lbl">유지보수</div></div>'+
+        '<div class="stat-chip" data-action="cl-proj"><div class="stat-chip-val">'+clProj+'</div><div class="stat-chip-lbl">프로젝트</div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="stat-group">'+
+      '<div class="stat-group-title">🔧 지원 내역 <span style="font-weight:400;color:var(--text3);">('+D.support.length+')</span></div>'+
+      '<div class="stat-chips">'+
+        '<div class="stat-chip" data-action="sup-open"><div class="stat-chip-val" style="color:var(--blue);">'+supOpen+'</div><div class="stat-chip-lbl">미처리</div></div>'+
+        '<div class="stat-chip" data-action="sup-done"><div class="stat-chip-val" style="color:var(--green);">'+supDone+'</div><div class="stat-chip-lbl">처리완료</div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="stat-group">'+
+      '<div class="stat-group-title">🚀 프로젝트 <span style="font-weight:400;color:var(--text3);">('+D.projects.length+')</span></div>'+
+      '<div class="stat-chips">'+
+        '<div class="stat-chip" data-action="proj-plan"><div class="stat-chip-val" style="color:var(--amber);">'+projPlan+'</div><div class="stat-chip-lbl">진행예정</div></div>'+
+        '<div class="stat-chip" data-action="proj-prog"><div class="stat-chip-val" style="color:var(--blue);">'+projProg+'</div><div class="stat-chip-lbl">진행중</div></div>'+
+        '<div class="stat-chip" data-action="proj-end"><div class="stat-chip-val" style="color:var(--text3);">'+projEnd+'</div><div class="stat-chip-lbl">종료</div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="stat-group">'+
+      '<div class="stat-group-title">🛡 취약점 <span style="font-weight:400;color:var(--text3);">('+D.ki.length+')</span></div>'+
+      '<div class="stat-chips">'+
+        '<div class="stat-chip" data-action="ki-critical"><div class="stat-chip-val" style="color:var(--red);">'+kiC+'</div><div class="stat-chip-lbl">Critical</div></div>'+
+        '<div class="stat-chip" data-action="ki-high"><div class="stat-chip-val" style="color:var(--amber);">'+kiH+'</div><div class="stat-chip-lbl">High</div></div>'+
+        '<div class="stat-chip" data-action="ki-other"><div class="stat-chip-val" style="color:var(--blue);">'+kiOther+'</div><div class="stat-chip-lbl">etc</div></div>'+
+      '</div>'+
+    '</div>';
+  statsEl.querySelectorAll('.stat-chip').forEach(el=>{el.addEventListener('click',()=>handleStatClick(el.dataset.action));});renderMiniCal();renderWeek();document.getElementById('dash-sup').innerHTML=openSup.length?openSup.slice(0,4).map(s=>'<div class="ri" style="cursor:pointer;" onclick=\'openSupDetail(\'+s.id+\')\'><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(s.title)+'</div><div style="font-size:11px;color:var(--text2);">'+esc(s.client)+' · '+s.reqDate+'</div></div><span class="badge '+(s.status==='open'?'b-open':'b-prog')+'">'+stLbl(s.status)+'</span></div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';document.getElementById('dash-proj').innerHTML=activeProj.length?activeProj.slice(0,4).map(p=>'<div class="ri" style="cursor:pointer;" onclick=\'openProjDetail(\'+p.id+\')\'><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(p.title)+'</div><div style="font-size:11px;color:var(--text2);">'+esc(p.client)+'</div></div>'+stageBadge(p.stage)+'</div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';document.getElementById('dash-vuln').innerHTML=critKi.length?critKi.slice(0,3).map(k=>'<div class="ri" style="cursor:pointer;" onclick=\'openKiDetail(\'+k.id+\')\'><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(k.title)+'</div><div style="font-size:11px;color:var(--text2);">'+esc(k.prod)+'</div></div><span class="badge sev-C">Critical</span></div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';document.getElementById('dash-logs').innerHTML=D.logs.length?D.logs.slice().reverse().slice(0,4).map(l=>'<div class="ri" style="cursor:pointer;" onclick=\'openLogDetail(\'+l.id+\')\'><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(l.title)+'</div><div style="font-size:11px;color:var(--text2);">'+l.date+(l.client?' · '+esc(l.client):'')+'</div></div></div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';}
 function renderMiniCal(){const y=calD.getFullYear(),m=calD.getMonth(),days=['일','월','화','수','목','금','토'],head=document.getElementById('dash-cal-head');if(head)head.innerHTML=days.map((d,i)=>'<div style="text-align:center;font-size:10px;padding:3px 0;color:'+(i===0?'var(--red-text)':i===6?'var(--blue-text)':'var(--text3)')+'">'+d+'</div>').join('');const first=new Date(y,m,1).getDay(),last=new Date(y,m+1,0).getDate(),today=ymd(new Date()),ed={};D.events.forEach(e=>{if(e.date&&e.date.startsWith(y+'-'+p2(m+1)))ed[e.date]=(ed[e.date]||0)+1;});let h='';const prev=new Date(y,m,0).getDate();for(let i=0;i<first;i++)h+='<div class="mini-cd oth">'+(prev-first+i+1)+'</div>';for(let d=1;d<=last;d++){const ds=y+'-'+p2(m+1)+'-'+p2(d),cnt=ed[ds]||0;let c='mini-cd';if(ds===today)c+=' tod';h+='<div class="'+c+'" style="position:relative;">'+d+(cnt?'<span class="cnt-badge">'+cnt+'</span>':'')+'</div>';}const rem=(7-((first+last)%7))%7;for(let i=1;i<=rem;i++)h+='<div class="mini-cd oth">'+i+'</div>';const body=document.getElementById('dash-cal-body');if(body)body.innerHTML=h;}
 function renderWeek(){const today=ymd(new Date()),now=new Date(),day=now.getDay(),startDate=new Date(now),days=['일','월','화','수','목','금','토'];startDate.setDate(now.getDate()-day);let html='';for(let i=0;i<7;i++){const d=new Date(startDate);d.setDate(startDate.getDate()+i);const ds=ymd(d),isToday=ds===today,evs=D.events.filter(e=>e.date===ds).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));html+='<div class="week-col'+(isToday?' today':'')+'"><div class="week-col-hd">'+days[i]+' '+d.getDate()+'</div>'+evs.slice(0,3).map(e=>'<div class="week-ev '+(e.allday?'allday':'timed')+'" title="'+esc(e.title)+'">'+(e.allday?'':e.startTime?e.startTime.slice(0,5)+' ':'')+esc(e.title)+'</div>').join('')+(evs.length>3?'<div style="font-size:9px;color:var(--text3);">+'+(evs.length-3)+'건</div>':'')+'</div>';}const el=document.getElementById('dash-week');if(el)el.innerHTML=html;}
 
@@ -877,7 +948,7 @@ window.saveSup=async function(){const t=v('sp-title');if(!t){showToast('제목�
 async function autoCreateLog(sup){if(!sup.title||!sup.reqDate)return;const existing=D.logs.find(l=>l.autoFromSup===sup.id);const ts=sup.allday?'종일':(sup.startTime||'')+(sup.endTime?' ~ '+sup.endTime:'');const obj={date:sup.reqDate,type:'고객사 지원',client:sup.client||'',title:'[기술지원] '+sup.title,content:(ts?'시간: '+ts+'\n':'')+(sup.desc||''),action:sup.result||'',filesNote:sup.filesNote||'',tags:sup.tags||[],autoFromSup:sup.id};if(existing){await fsUpd('logs',existing.id,{id:existing.id,...obj});}else{await fsAdd('logs',obj);}if(document.getElementById('page-worklog')?.classList.contains('active'))renderLog();}
 
 // PROJECTS
-function renderProj(){updSelects();const q=(v('proj-search')||'').toLowerCase(),sf=document.getElementById('proj-stage-f').value,cf=document.getElementById('proj-client-f').value,list=D.projects.filter(p=>(!q||(p.title+p.client+p.prod).toLowerCase().includes(q))&&(!sf||p.stage===sf)&&(!cf||p.client===cf));document.getElementById('proj-list').innerHTML=list.length?list.slice().reverse().map(p=>'<div class="card clickable" onclick="openProjDetail(\''+p.id+'\')"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;"><div><div style="font-size:13px;font-weight:600;">'+esc(p.title)+'</div><div style="font-size:11px;color:var(--text2);margin-top:1px;">'+esc(p.client)+' · '+esc(p.prod)+(p.start?' · '+p.start:'')+(p.end?' ~ '+p.end:'')+'</div></div><div style="display:flex;gap:5px;align-items:center;">'+stageBadge(p.stage)+'<button class="btn xs" onclick="event.stopPropagation();openProjMod(\''+p.id+'\')">✏</button><button class="btn dg xs" onclick="event.stopPropagation();delItem(\'projects\',\''+p.id+'\',renderProj)">🗑</button></div></div>'+(p.desc?'<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">'+esc(p.desc)+'</div>':'')+((p.progress||[]).length?'<div style="font-size:11px;color:var(--text2);">최근: '+esc(p.progress[p.progress.length-1].content.slice(0,60))+'</div>':'')+tagsHtml(p.tags)+'</div>').join(''):'<div class="card"><div class="empty">프로젝트가 없습니다</div></div>';}
+function renderProj(){updSelects();const q=(v('proj-search')||'').toLowerCase(),sf=document.getElementById('proj-stage-f').value,cf=document.getElementById('proj-client-f').value,list=D.projects.filter(p=>{const mf=window._projMultiFilter;return(!q||(p.title+p.client+p.prod).toLowerCase().includes(q))&&(mf?mf.includes(p.stage):(!sf||p.stage===sf))&&(!cf||p.client===cf);});document.getElementById('proj-list').innerHTML=list.length?list.slice().reverse().map(p=>'<div class="card clickable" onclick="openProjDetail(\''+p.id+'\')"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;"><div><div style="font-size:13px;font-weight:600;">'+esc(p.title)+'</div><div style="font-size:11px;color:var(--text2);margin-top:1px;">'+esc(p.client)+' · '+esc(p.prod)+(p.start?' · '+p.start:'')+(p.end?' ~ '+p.end:'')+'</div></div><div style="display:flex;gap:5px;align-items:center;">'+stageBadge(p.stage)+'<button class="btn xs" onclick="event.stopPropagation();openProjMod(\''+p.id+'\')">✏</button><button class="btn dg xs" onclick="event.stopPropagation();delItem(\'projects\',\''+p.id+'\',renderProj)">🗑</button></div></div>'+(p.desc?'<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">'+esc(p.desc)+'</div>':'')+((p.progress||[]).length?'<div style="font-size:11px;color:var(--text2);">최근: '+esc(p.progress[p.progress.length-1].content.slice(0,60))+'</div>':'')+tagsHtml(p.tags)+'</div>').join(''):'<div class="card"><div class="empty">프로젝트가 없습니다</div></div>';}
 window.openProjDetail=function(id){const p=D.projects.find(x=>x.id===id);if(!p)return;const prog=p.progress||[],sl={prop:'제안',poc:'PoC',bmt:'BMT',deploy:'구축',done:'완료',hold:'보류'},so={prop:0,poc:1,bmt:2,deploy:3,done:4,hold:4},stages=['prop','poc','bmt','deploy','done'],curIdx=so[p.stage]||0;let steps='<div style="display:flex;margin-bottom:16px;border-radius:var(--r);overflow:hidden;border:1px solid var(--border);">';stages.forEach((s,i)=>{const active=i===curIdx,past=i<curIdx;steps+='<div style="flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:'+(active?'700':'400')+';background:'+(active?'var(--blue)':past?'var(--blue-bg)':'var(--bg3)')+';color:'+(active?'#fff':past?'var(--blue)':'var(--text2)')+(i<4?';border-right:1px solid var(--border)':'')+';">'+sl[s]+'</div>';});steps+='</div>';const tl=prog.length?prog.map(pg=>'<div class="tl-item'+(pg.stage==='done'?' done':'')+'"><div class="tl-date">'+pg.date+' · <b>'+sl[pg.stage]+'</b></div><div class="tl-content">'+esc(pg.content)+(pg.filesNote?'<div style="font-size:11px;color:var(--text2);margin-top:3px;">📎 '+esc(pg.filesNote)+'</div>':'')+'</div></div>').join(''):'<div style="font-size:12px;color:var(--text3);">진행 이력 없음</div>';document.getElementById('proj-detail-content').innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;"><div><div style="font-size:16px;font-weight:700;color:var(--text);">'+esc(p.title)+'</div><div style="font-size:12px;color:var(--text2);margin-top:3px;">'+esc(p.client)+' · '+esc(p.prod)+(p.start?' · '+p.start:'')+(p.end?' ~ '+p.end:'')+'</div></div>'+stageBadge(p.stage)+'</div>'+steps+(p.desc?'<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px;background:var(--bg3);border-radius:var(--r);">'+esc(p.desc)+'</div>':'')+tagsHtml(p.tags)+'<div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px;"><div style="font-size:13px;font-weight:600;color:var(--text);">진행 이력</div><button class="btn xs pr" onclick="openProgMod(\''+p.id+'\')">+ 이력 추가</button></div><div class="timeline">'+tl+'</div>';document.getElementById('proj-detail-modal').classList.add('open');};
 window.openProgMod=function(pid){document.getElementById('prog-pj-id').value=pid;sv('pg-date',ymd(new Date()));const p=D.projects.find(x=>x.id===pid);sv('pg-stage',p?.stage||'prop');sv('pg-content','');sv('pg-files','');document.getElementById('prog-modal').classList.add('open');};
 window.saveProg=async function(){const cnt=v('pg-content');if(!cnt)return;const pid=document.getElementById('prog-pj-id').value,p=D.projects.find(x=>x.id===pid);if(!p)return;if(!p.progress)p.progress=[];p.progress.push({date:v('pg-date'),stage:v('pg-stage'),content:cnt,filesNote:v('pg-files')});p.stage=v('pg-stage');await fsUpd('projects',pid,p);closeM('prog-modal',true);openProjDetail(pid);renderProj();showToast('진행 이력이 추가되었습니다 ✓');};
@@ -895,7 +966,51 @@ window.openClMod=function(id){eId.cl=id;document.getElementById('cl-mt-t').textC
 window.saveCl=async function(){const n=v('c-name');if(!n){showToast('회사명을 입력해주세요');return;}const ex=eId.cl?D.clients.find(x=>x.id===eId.cl):null,obj={name:n,industry:v('c-industry'),contact:v('c-contact'),phone:v('c-phone'),email:v('c-email'),expiry:v('c-expiry'),memo:v('c-memo'),tags:tmpTags.c||[],products:ex?.products||[]};if(eId.cl){await fsUpd('clients',eId.cl,{id:eId.cl,...obj});}else{await fsAdd('clients',obj);}closeM('cl-modal',true);renderCl();updSelects();showToast('고객사가 저장되었습니다 ✓');};
 
 // REPORT
-function renderReport(){const byC={},byT={},bySev={C:0,H:0,M:0,L:0},byLT={};D.support.forEach(s=>{byC[s.client]=(byC[s.client]||0)+1;byT[s.type]=(byT[s.type]||0)+1;});D.ki.forEach(k=>{bySev[k.sev]=(bySev[k.sev]||0)+1;});D.logs.forEach(l=>{const t=l.type||'고객사 지원';byLT[t]=(byLT[t]||0)+1;});const sC=Object.entries(byC).sort((a,b)=>b[1]-a[1]),mC=sC.length?sC[0][1]:1,sT=Object.entries(byT).sort((a,b)=>b[1]-a[1]),mT=sT.length?sT[0][1]:1,sLT=Object.entries(byLT).sort((a,b)=>b[1]-a[1]),mLT=sLT.length?sLT[0][1]:1;document.getElementById('report-content').innerHTML='<div class="stat-grid" style="grid-template-columns:repeat(3,1fr);"><div class="stat"><div class="sl">전체 기술지원</div><div class="sv">'+D.support.length+'</div></div><div class="stat"><div class="sl">완료</div><div class="sv" style="color:var(--green);">'+D.support.filter(s=>s.status==='done').length+'</div></div><div class="stat"><div class="sl">미처리</div><div class="sv" style="color:var(--red);">'+D.support.filter(s=>s.status==='open').length+'</div></div></div><div class="card"><div class="sh"><h3>고객사별 기술지원</h3></div>'+(sC.length?sC.map(e=>'<div class="report-bar"><div class="bar-label">'+esc(e[0]||'미지정')+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(e[1]/mC*100).toFixed(0)+'%;"></div></div><div class="bar-val">'+e[1]+'건</div></div>').join(''):'<div class="empty">데이터 없음</div>')+'</div><div class="card"><div class="sh"><h3>업무 유형별 일지</h3></div>'+(sLT.length?sLT.map(e=>'<div class="report-bar"><div class="bar-label">'+esc(e[0])+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(e[1]/mLT*100).toFixed(0)+'%;background:var(--teal);"></div></div><div class="bar-val">'+e[1]+'건</div></div>').join(''):'<div class="empty">데이터 없음</div>')+'</div><div class="card"><div class="sh"><h3>취약점 등급 현황</h3></div>'+['C','H','M','L'].map(s=>'<div class="report-bar"><div class="bar-label">'+sevLbl(s)+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(bySev[s]/(D.ki.length||1)*100).toFixed(0)+'%;background:'+({C:'var(--red)',H:'#e68a00',M:'var(--blue)',L:'var(--green)'}[s])+';"></div></div><div class="bar-val">'+bySev[s]+'건</div></div>').join('')+'</div>';}
+// ── REPORT PERIOD FILTER ──
+let rptPeriod='all';
+window.setRptPeriod=function(period){
+  rptPeriod=period;
+  ['all','month','week','day'].forEach(p=>{
+    const btn=document.getElementById('rpt-btn-'+p);
+    if(btn){btn.style.background=p===period?'var(--blue)':'';btn.style.color=p===period?'#fff':'';btn.style.borderColor=p===period?'var(--blue)':'';}
+  });
+  renderPeriodStats();
+};
+function getPeriodDates(period){
+  const today=ymd(new Date()),now=new Date();
+  if(period==='all')return{from:null,to:null};
+  if(period==='day')return{from:today,to:today};
+  if(period==='month'){const f=today.slice(0,7)+'-01';return{from:f,to:today};}
+  if(period==='week'){const day=now.getDay(),sd=new Date(now);sd.setDate(now.getDate()-day);return{from:ymd(sd),to:today};}
+  if(period==='custom'){const f=document.getElementById('rpt-custom-from')?.value,t=document.getElementById('rpt-custom-to')?.value;return{from:f||null,to:t||null};}
+  return{from:null,to:null};
+}
+function filterByPeriod(arr,dateField){
+  const{from,to}=getPeriodDates(rptPeriod);
+  return arr.filter(item=>{const d=item[dateField]||item.date||item.reqDate||'';if(from&&d<from)return false;if(to&&d>to)return false;return true;});
+}
+function renderPeriodStats(){
+  const sups=filterByPeriod(D.support,'reqDate');
+  const logs=filterByPeriod(D.logs,'date');
+  const{from,to}=getPeriodDates(rptPeriod);
+  const label=rptPeriod==='all'?'전체':rptPeriod==='month'?'이번 달':rptPeriod==='week'?'이번 주':rptPeriod==='day'?'오늘':(from||'')+'~'+(to||'');
+  const el=document.getElementById('rpt-period-stats');if(!el)return;
+  const byStatus={open:0,prog:0,done:0};sups.forEach(s=>byStatus[s.status]=(byStatus[s.status]||0)+1);
+  const byType={};sups.forEach(s=>{byType[s.type]=(byType[s.type]||0)+1;});
+  const sortedT=Object.entries(byType).sort((a,b)=>b[1]-a[1]);
+  const maxT=sortedT.length?sortedT[0][1]:1;
+  el.innerHTML=
+    '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;">'+
+    '<div style="background:var(--bg3);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--text);">'+sups.length+'</div><div style="font-size:10px;color:var(--text2);">전체 지원</div></div>'+
+    '<div style="background:var(--blue-bg);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--blue);">'+byStatus.open+'</div><div style="font-size:10px;color:var(--text2);">미처리</div></div>'+
+    '<div style="background:var(--amber-bg);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--amber);">'+(byStatus.prog||0)+'</div><div style="font-size:10px;color:var(--text2);">처리중</div></div>'+
+    '<div style="background:var(--green-bg);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--green);">'+byStatus.done+'</div><div style="font-size:10px;color:var(--text2);">완료</div></div>'+
+    '<div style="background:var(--teal-bg);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--teal);">'+logs.length+'</div><div style="font-size:10px;color:var(--text2);">업무일지</div></div>'+
+    '</div>'+
+    (sortedT.length?'<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;">유형별 기술지원 ('+label+')</div>'+sortedT.map(([t,c])=>'<div class="report-bar"><div class="bar-label">'+esc(t)+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(c/maxT*100).toFixed(0)+'%;"></div></div><div class="bar-val">'+c+'건</div></div>').join(''):'<div class="empty" style="padding:16px;">해당 기간 데이터 없음</div>');
+}
+
+function renderReport(){const byC={},byT={},bySev={C:0,H:0,M:0,L:0},byLT={};D.support.forEach(s=>{byC[s.client]=(byC[s.client]||0)+1;byT[s.type]=(byT[s.type]||0)+1;});D.ki.forEach(k=>{bySev[k.sev]=(bySev[k.sev]||0)+1;});D.logs.forEach(l=>{const t=l.type||'고객사 지원';byLT[t]=(byLT[t]||0)+1;});const sC=Object.entries(byC).sort((a,b)=>b[1]-a[1]),mC=sC.length?sC[0][1]:1,sT=Object.entries(byT).sort((a,b)=>b[1]-a[1]),mT=sT.length?sT[0][1]:1,sLT=Object.entries(byLT).sort((a,b)=>b[1]-a[1]),mLT=sLT.length?sLT[0][1]:1;renderPeriodStats();document.getElementById('report-content').innerHTML='<div class="stat-grid" style="grid-template-columns:repeat(3,1fr);"><div class="stat"><div class="sl">전체 기술지원</div><div class="sv">'+D.support.length+'</div></div><div class="stat"><div class="sl">완료</div><div class="sv" style="color:var(--green);">'+D.support.filter(s=>s.status==='done').length+'</div></div><div class="stat"><div class="sl">미처리</div><div class="sv" style="color:var(--red);">'+D.support.filter(s=>s.status==='open').length+'</div></div></div><div class="card"><div class="sh"><h3>고객사별 기술지원</h3></div>'+(sC.length?sC.map(e=>'<div class="report-bar"><div class="bar-label">'+esc(e[0]||'미지정')+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(e[1]/mC*100).toFixed(0)+'%;"></div></div><div class="bar-val">'+e[1]+'건</div></div>').join(''):'<div class="empty">데이터 없음</div>')+'</div><div class="card"><div class="sh"><h3>업무 유형별 일지</h3></div>'+(sLT.length?sLT.map(e=>'<div class="report-bar"><div class="bar-label">'+esc(e[0])+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(e[1]/mLT*100).toFixed(0)+'%;background:var(--teal);"></div></div><div class="bar-val">'+e[1]+'건</div></div>').join(''):'<div class="empty">데이터 없음</div>')+'</div><div class="card"><div class="sh"><h3>취약점 등급 현황</h3></div>'+['C','H','M','L'].map(s=>'<div class="report-bar"><div class="bar-label">'+sevLbl(s)+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(bySev[s]/(D.ki.length||1)*100).toFixed(0)+'%;background:'+({C:'var(--red)',H:'#e68a00',M:'var(--blue)',L:'var(--green)'}[s])+';"></div></div><div class="bar-val">'+bySev[s]+'건</div></div>').join('')+'</div>';}
 
 // EXPORT
 function initExport(){const today=ymd(new Date()),first=today.slice(0,7)+'-01';if(!v('xl-from'))sv('xl-from',first);if(!v('xl-to'))sv('xl-to',today);if(!v('pdf-from'))sv('pdf-from',first);if(!v('pdf-to'))sv('pdf-to',today);if(!v('rpt-from'))sv('rpt-from',first);if(!v('rpt-to'))sv('rpt-to',today);}
@@ -933,29 +1048,37 @@ window.openKiDetail=function(id){
 
 // ── STAT CARD CLICK HANDLER (navigate + filter) ──
 window.handleStatClick=function(action){
-  if(action==='clients'){
+  const setFilter=function(id,val,renderFn){setTimeout(()=>{const el=document.getElementById(id);if(el){el.value=val;renderFn();}},80);};
+  if(action==='clients'||action==='cl-active'||action==='cl-proj'){
     go('clients');
   } else if(action==='sup-open'){
-    go('support');
-    // Set filter to 미처리 after page renders
-    setTimeout(()=>{
-      const sf=document.getElementById('sup-status-f');
-      if(sf){sf.value='open';renderSup();}
-    },100);
-  } else if(action==='proj-active'){
+    go('support');setFilter('sup-status-f','open',renderSup);
+  } else if(action==='sup-done'){
+    go('support');setFilter('sup-status-f','done',renderSup);
+  } else if(action==='proj-plan'){
     go('projects');
-    // Set filter to active stages
     setTimeout(()=>{
+      // Show 진행예정: 제안/PoC/BMT - use custom multi-stage filter
+      window._projMultiFilter=['prop','poc','bmt'];
+      renderProj();
+      window._projMultiFilter=null;
       const sf=document.getElementById('proj-stage-f');
-      if(sf){sf.value='';renderProj();} // show all, but active ones are at top
-    },100);
+      if(sf)sf.value='';
+    },80);
+  } else if(action==='proj-prog'){
+    go('projects');setFilter('proj-stage-f','deploy',renderProj);
+  } else if(action==='proj-end'){
+    go('projects');setFilter('proj-stage-f','done',renderProj);
   } else if(action==='ki-critical'){
+    go('ki');setFilter('ki-sev-f','C',renderKi);
+  } else if(action==='ki-high'){
+    go('ki');setFilter('ki-sev-f','H',renderKi);
+  } else if(action==='ki-other'){
     go('ki');
-    // Set filter to Critical
     setTimeout(()=>{
       const sf=document.getElementById('ki-sev-f');
-      if(sf){sf.value='C';renderKi();}
-    },100);
+      if(sf){sf.value='M';renderKi();}// Medium as default of 'etc'
+    },80);
   }
 };
 
