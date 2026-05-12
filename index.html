@@ -113,7 +113,9 @@ body{font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;background:var
 /* FORMS */
 input[type=text],input[type=date],input[type=time],input[type=email],input[type=tel],textarea,select{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--r);font-size:14px;background:var(--bg2);color:var(--text);font-family:inherit;outline:none;transition:border-color .15s;-webkit-appearance:none;}
 input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,111,216,.1);}
-textarea{resize:vertical;min-height:80px;line-height:1.6;}
+textarea{resize:vertical;min-height:100px;line-height:1.7;}
+textarea.tall{min-height:160px;}
+textarea.xtall{min-height:220px;}
 label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-weight:600;}
 .fr{margin-bottom:16px;}
 .fg2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -194,6 +196,8 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
 .ev-allday{background:var(--green-bg);color:var(--green-text);}
 .ev-timed{background:var(--blue-bg);color:var(--blue-text);}
 .cnt-badge{position:absolute;top:2px;right:3px;font-size:8px;background:var(--blue);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;}
+.cal-add-btn{width:18px;height:18px;border-radius:50%;background:transparent;color:var(--text3);font-size:14px;display:flex;align-items:center;justify-content:center;opacity:0;transition:all .15s;line-height:1;cursor:pointer;flex-shrink:0;}
+.cal-cd:hover .cal-add-btn{opacity:1;background:var(--blue);color:#fff;}
 .mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;}
 .mini-cd{text-align:center;padding:5px 2px;font-size:11px;border-radius:5px;color:var(--text);position:relative;}
 .mini-cd.tod{background:var(--blue-bg);color:var(--blue);font-weight:700;}
@@ -207,6 +211,9 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
 .week-ev{font-size:10px;padding:2px 4px;border-radius:3px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .week-ev.allday{background:var(--green-bg);color:var(--green-text);}
 .week-ev.timed{background:var(--blue-bg);color:var(--blue-text);}
+.week-ev.gcal{background:var(--green-bg);color:var(--green-text);border-left:2px solid var(--green);}
+.ev-pill.gcal{background:var(--green-bg);color:var(--green-text);border-left:2px solid var(--green);}
+.gcal-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;background:var(--green-bg);color:var(--green-text);padding:1px 5px;border-radius:10px;font-weight:600;}
 /* TIMELINE */
 .timeline{position:relative;padding-left:20px;}
 .timeline::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:1px;background:var(--border);}
@@ -367,6 +374,8 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
     <div class="ns">관리</div>
     <div class="ni" onclick="go('clients')" id="nav-clients"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>고객사</div>
     <div class="ni" onclick="go('report')" id="nav-report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>통계/리포트</div>
+    <div class="ni" onclick="go('memo')" id="nav-memo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>메모</div>
+    <div class="ni" onclick="go('docs')" id="nav-docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>기술 자료</div>
     <div class="ni" onclick="go('export')" id="nav-export"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>내보내기</div>
   </div>
   <div class="sidebar-bottom">
@@ -442,8 +451,15 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
       <div class="ptitle" id="cal-title"></div>
       <button class="btn ghost" onclick="chMon(1)" style="padding:6px 10px;font-size:18px;">›</button>
     </div>
-    <button class="btn pr" onclick="openEvMod(null)">+ 일정</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn" id="gcal-btn" onclick="toggleGCal()" style="border-color:var(--green);color:var(--green);display:flex;align-items:center;gap:5px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Google 캘린더
+      </button>
+      <button class="btn pr" onclick="openEvMod(null)">+ 일정</button>
+    </div>
   </div>
+  <div id="gcal-status" style="margin-bottom:10px;font-size:12px;color:var(--text2);display:none;"></div>
   <div class="card" style="margin-bottom:12px;overflow-x:auto;">
     <div style="min-width:400px;">
       <div class="cal-head-row" id="cal-head"></div>
@@ -519,6 +535,92 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
   </div>
   <div id="report-content"></div>
 </div>
+<div id="page-memo" class="page">
+  <div class="tb"><div><div class="ptitle">메모</div><div class="psub">빠른 메모 · 회의록 · 아이디어</div></div>
+  <button class="btn pr" onclick="openMemoMod(null)">+ 메모 작성</button></div>
+  <div class="filter-bar">
+    <input type="text" id="memo-search" placeholder="검색..." oninput="renderMemo()" style="width:200px;">
+    <select id="memo-cat-f" onchange="renderMemo()" style="width:130px;">
+      <option value="">전체 카테고리</option>
+      <option>회의록</option>
+      <option>아이디어</option>
+      <option>기술 노트</option>
+      <option>To-Do</option>
+      <option>기타</option>
+    </select>
+  </div>
+  <div id="memo-list"></div>
+</div>
+
+<!-- MEMO MODAL -->
+<div class="overlay" id="memo-modal"><div class="modal wide">
+  <div class="mt"><span id="memo-mt-t">메모 작성</span><button class="mt-x" onclick="closeM('memo-modal')">✕</button></div>
+  <div class="fg2">
+    <div class="fr"><label>제목 *</label><input type="text" id="mm-title" placeholder="메모 제목"></div>
+    <div class="fr"><label>카테고리</label><select id="mm-cat"><option>회의록</option><option>아이디어</option><option>기술 노트</option><option>To-Do</option><option>기타</option></select></div>
+  </div>
+  <div class="fr"><label>날짜</label><input type="date" id="mm-date"></div>
+  <div class="fr"><label>내용 *</label><textarea id="mm-content" class="xtall" placeholder="메모 내용을 입력하세요..."></textarea></div>
+  <div class="fr"><label>태그</label><div class="tag-wrap" id="mm-tw"><input type="text" placeholder="Enter로 추가" id="mm-ti" onkeydown="tagKey(event,'mm')"></div></div>
+  <div class="mf"><button class="btn" onclick="closeM('memo-modal',true)">취소</button><button class="btn pr" onclick="saveMemo()">저장</button></div>
+</div></div>
+
+<!-- MEMO DETAIL MODAL -->
+<div class="overlay" id="memo-detail-modal"><div class="modal wide">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+    <div id="memo-detail-header" style="flex:1;min-width:0;"></div>
+    <button class="mt-x" style="margin-left:12px;" onclick="closeM('memo-detail-modal',true)">✕</button>
+  </div>
+  <div id="memo-detail-content"></div>
+  <div class="mf">
+    <button class="btn" onclick="closeM('memo-detail-modal',true)">닫기</button>
+    <button class="btn pr" id="memo-detail-edit-btn">✏ 수정</button>
+  </div>
+</div></div>
+
+<div id="page-docs" class="page">
+  <div class="tb"><div><div class="ptitle">기술 자료</div><div class="psub">매뉴얼 · 설정 가이드 · 참고 문서</div></div>
+  <button class="btn pr" onclick="openDocMod(null)">+ 자료 등록</button></div>
+  <div class="filter-bar">
+    <input type="text" id="doc-search" placeholder="검색..." oninput="renderDocs()" style="width:200px;">
+    <select id="doc-cat-f" onchange="renderDocs()" style="width:140px;">
+      <option value="">전체 카테고리</option>
+      <option>설정 가이드</option>
+      <option>트러블슈팅</option>
+      <option>릴리즈 노트</option>
+      <option>Best Practice</option>
+      <option>제안서/보고서</option>
+      <option>기타</option>
+    </select>
+    <select id="doc-prod-f" onchange="renderDocs()" style="width:130px;">
+      <option value="">전체 제품</option>
+      <option>HW-NGFW</option><option>VM-NGFW</option><option>NGFW</option>
+      <option>Panorama</option><option>Prisma Access</option>
+      <option>Cortex XDR</option><option>GlobalProtect</option>
+      <option>SD-WAN</option><option>기타</option>
+    </select>
+  </div>
+  <div id="doc-list"></div>
+</div>
+
+<!-- DOC MODAL -->
+<div class="overlay" id="doc-modal"><div class="modal wide">
+  <div class="mt"><span id="doc-mt-t">기술 자료 등록</span><button class="mt-x" onclick="closeM('doc-modal')">✕</button></div>
+  <div class="fg2">
+    <div class="fr"><label>제목 *</label><input type="text" id="dm-title" placeholder="자료 제목"></div>
+    <div class="fr"><label>카테고리</label><select id="dm-cat"><option>설정 가이드</option><option>트러블슈팅</option><option>릴리즈 노트</option><option>Best Practice</option><option>제안서/보고서</option><option>기타</option></select></div>
+  </div>
+  <div class="fg2">
+    <div class="fr"><label>관련 제품</label><select id="dm-prod"><option>HW-NGFW</option><option>VM-NGFW</option><option>NGFW</option><option>Panorama</option><option>Prisma Access</option><option>Cortex XDR</option><option>GlobalProtect</option><option>SD-WAN</option><option>기타</option></select></div>
+    <div class="fr"><label>버전</label><input type="text" id="dm-ver" placeholder="예: PAN-OS 11.2.x"></div>
+  </div>
+  <div class="fr"><label>출처 / URL</label><input type="text" id="dm-url" placeholder="https://docs.paloaltonetworks.com/..."></div>
+  <div class="fr"><label>요약 / 내용 *</label><textarea id="dm-content" class="xtall" placeholder="핵심 내용, 설정 방법, 주의사항 등을 정리하세요..."></textarea></div>
+  <div class="fr"><label>첨부파일명</label><input type="text" id="dm-files" placeholder="예: PAN-OS_11.2_Admin_Guide.pdf"></div>
+  <div class="fr"><label>태그</label><div class="tag-wrap" id="dm-tw"><input type="text" placeholder="Enter로 추가" id="dm-ti" onkeydown="tagKey(event,'dm')"></div></div>
+  <div class="mf"><button class="btn" onclick="closeM('doc-modal',true)">취소</button><button class="btn pr" onclick="saveDoc()">저장</button></div>
+</div></div>
+
 <div id="page-export" class="page">
   <div class="tb"><div><div class="ptitle">내보내기</div><div class="psub">Excel · PDF · 기간별 리포트</div></div></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
@@ -583,6 +685,8 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
     <button class="btn" style="flex-direction:column;gap:6px;padding:16px;height:80px;font-size:12px;" onclick="closeMore();go('ki')">🛡<span>이슈/취약점</span></button>
     <button class="btn" style="flex-direction:column;gap:6px;padding:16px;height:80px;font-size:12px;" onclick="closeMore();go('projects')">🚀<span>프로젝트</span></button>
     <button class="btn" style="flex-direction:column;gap:6px;padding:16px;height:80px;font-size:12px;" onclick="closeMore();go('report')">📊<span>통계</span></button>
+    <button class="btn" style="flex-direction:column;gap:6px;padding:16px;height:80px;font-size:12px;" onclick="closeMore();go('memo')">📝<span>메모</span></button>
+    <button class="btn" style="flex-direction:column;gap:6px;padding:16px;height:80px;font-size:12px;" onclick="closeMore();go('docs')">📚<span>기술자료</span></button>
     <button class="btn" style="flex-direction:column;gap:6px;padding:16px;height:80px;font-size:12px;" onclick="closeMore();go('export')">📥<span>내보내기</span></button>
     <button class="btn" style="flex-direction:column;gap:6px;padding:16px;height:80px;font-size:12px;" onclick="closeMore();go('myinfo')">👤<span>내 정보</span></button>
   </div>
@@ -616,8 +720,8 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
   <div class="fg2"><div class="fr"><label>날짜 *</label><input type="date" id="lg-date"></div><div class="fr"><label>업무 유형</label><select id="lg-type"><option>고객사 지원</option><option>일반 업무</option><option>기술 교육</option><option>사내 회의</option><option>제안/영업 지원</option><option>출장</option><option>기타</option></select></div></div>
   <div class="fr"><label>고객사 (고객사 지원 시)</label><select id="lg-client"><option value="">없음</option></select></div>
   <div class="fr"><label>업무 요약 *</label><input type="text" id="lg-title" placeholder="예: PA-5280 펌웨어 업그레이드"></div>
-  <div class="fr"><label>상세 내용</label><textarea id="lg-content"></textarea></div>
-  <div class="fr"><label>이슈/조치</label><textarea id="lg-action"></textarea></div>
+  <div class="fr"><label>상세 내용</label><textarea id="lg-content" class="tall"></textarea></div>
+  <div class="fr"><label>이슈/조치</label><textarea id="lg-action" class="tall"></textarea></div>
   <div class="fr"><label>첨부파일명</label><input type="text" id="lg-files" placeholder="예: tsf_20240101.tar.gz"></div>
   <div class="fr"><label>태그</label><div class="tag-wrap" id="lg-tw"><input type="text" placeholder="Enter로 추가" id="lg-ti" onkeydown="tagKey(event,'lg')"></div></div>
   <div class="mf"><button class="btn" onclick="closeM('log-modal',true)">취소</button><button class="btn pr" onclick="saveLg()">저장</button></div>
@@ -659,8 +763,8 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
   <div class="fr"><label>제목 *</label><input type="text" id="ki-title" placeholder="예: PAN-OS Auth Bypass (CVE-2024-XXXX)"></div>
   <div class="fg3"><div class="fr"><label>유형</label><select id="ki-type-m"><option>보안 취약점</option><option>버그/결함</option><option>권고사항</option></select></div><div class="fr"><label>제품군</label><select id="ki-prod-m"><option>HW-NGFW</option><option>VM-NGFW</option><option>NGFW</option><option>Panorama</option><option>Prisma Access</option><option>Cortex XDR</option><option>GlobalProtect</option><option>SD-WAN</option><option>기타</option></select></div><div class="fr"><label>등급</label><select id="ki-sev-m"><option value="C">Critical</option><option value="H">High</option><option value="M" selected>Medium</option><option value="L">Low</option></select></div></div>
   <div class="fg2"><div class="fr"><label>CVE 번호</label><input type="text" id="ki-cve" placeholder="CVE-2024-XXXX"></div><div class="fr"><label>영향 버전</label><input type="text" id="ki-ver" placeholder="PAN-OS 10.x ~ 11.x"></div></div>
-  <div class="fr"><label>설명 / 증상</label><textarea id="ki-desc"></textarea></div>
-  <div class="fr"><label>해결 방법</label><textarea id="ki-fix"></textarea></div>
+  <div class="fr"><label>설명 / 증상</label><textarea id="ki-desc" class="tall"></textarea></div>
+  <div class="fr"><label>해결 방법</label><textarea id="ki-fix" class="tall"></textarea></div>
   <div class="fr"><label>등록일</label><input type="date" id="ki-date"></div>
   <div class="fr"><label>태그</label><div class="tag-wrap" id="ki-tw"><input type="text" placeholder="Enter로 추가" id="ki-ti" onkeydown="tagKey(event,'ki')"></div></div>
   <div class="mf"><button class="btn" onclick="closeM('ki-modal',true)">취소</button><button class="btn pr" onclick="saveKi()">저장</button></div>
@@ -694,8 +798,8 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
     <div class="fr" id="sp-end-tp-row"><label>종료 시간</label><div class="time-picker-wrap" id="sp-end-tp"></div></div>
   </div>
   <div id="sp-dur-row" style="margin-bottom:14px;"></div>
-  <div class="fr"><label>요청/증상 내용</label><textarea id="sp-desc"></textarea></div>
-  <div class="fr"><label>처리 내용 / 결과</label><textarea id="sp-result"></textarea></div>
+  <div class="fr"><label>요청/증상 내용</label><textarea id="sp-desc" class="tall"></textarea></div>
+  <div class="fr"><label>처리 내용 / 결과</label><textarea id="sp-result" class="tall"></textarea></div>
 
   <div class="fr"><label>첨부파일명</label><input type="text" id="sp-files" placeholder="예: ha_failover.log"></div>
   <div class="fr"><label>태그</label><div class="tag-wrap" id="sp-tw"><input type="text" placeholder="Enter로 추가" id="sp-ti" onkeydown="tagKey(event,'sp')"></div></div>
@@ -707,7 +811,7 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
   <div class="fg2"><div class="fr"><label>프로젝트명 *</label><input type="text" id="pj-title"></div><div class="fr"><label>고객사</label><select id="pj-client"><option value="">선택</option></select></div></div>
   <div class="fg3"><div class="fr"><label>제품군</label><select id="pj-prod"><option>NGFW</option><option>Prisma SASE</option><option>Prisma Access</option><option>SD-WAN</option><option>Panorama</option><option>Cortex XDR</option><option>복합</option><option>기타</option></select></div><div class="fr"><label>단계</label><select id="pj-stage"><option value="prop">제안</option><option value="poc">PoC</option><option value="bmt">BMT</option><option value="deploy">구축</option><option value="done">완료</option><option value="hold">보류</option></select></div><div class="fr"><label>시작일</label><input type="date" id="pj-start"></div></div>
   <div class="fr"><label>종료(예정)일</label><input type="date" id="pj-end"></div>
-  <div class="fr"><label>개요</label><textarea id="pj-desc"></textarea></div>
+  <div class="fr"><label>개요</label><textarea id="pj-desc" class="tall"></textarea></div>
   <div class="fr"><label>태그</label><div class="tag-wrap" id="pj-tw"><input type="text" placeholder="Enter로 추가" id="pj-ti" onkeydown="tagKey(event,'pj')"></div></div>
   <div class="mf"><button class="btn" onclick="closeM('proj-modal',true)">취소</button><button class="btn pr" onclick="saveProj()">저장</button></div>
 </div></div>
@@ -809,6 +913,8 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
   <div class="fr"><label>메모</label><textarea id="pd-memo"></textarea></div>
   <div class="mf"><button class="btn" onclick="closeM('prod-modal',true)">취소</button><button class="btn pr" onclick="saveProd()">저장</button></div>
 </div></div>
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -827,7 +933,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.firestore(),provider=new firebase.auth.GoogleAuthProvider();
 
-let U=null,D={events:[],logs:[],ki:[],support:[],projects:[],clients:[],myinfo:{}};
+let U=null,D={events:[],logs:[],ki:[],support:[],projects:[],clients:[],memos:[],docs:[],myinfo:{}};
 let eId={},tmpTags={},selProds=[],calD=new Date(),selD=ymd(new Date());
 
 // UTILS
@@ -862,7 +968,7 @@ window.logout=async function(){if(!confirm('로그아웃 하시겠습니까?'))r
 // FIRESTORE
 function uCol(c){return db.collection('users').doc(U.uid).collection(c);}
 function uDoc(c,id){return db.collection('users').doc(U.uid).collection(c).doc(id);}
-async function loadAll(){for(const c of['events','logs','ki','support','projects','clients']){const s=await uCol(c).get();D[c]=s.docs.map(d=>({id:d.id,...d.data()}));}const mi=await db.collection('users').doc(U.uid).collection('meta').doc('myinfo').get();if(mi.exists)D.myinfo=mi.data();}
+async function loadAll(){for(const c of['events','logs','ki','support','projects','clients','memos','docs']){const s=await uCol(c).get();D[c]=s.docs.map(d=>({id:d.id,...d.data()}));}const mi=await db.collection('users').doc(U.uid).collection('meta').doc('myinfo').get();if(mi.exists)D.myinfo=mi.data();}
 async function fsAdd(col,data){setSyncStatus('syncing');const{id,...r}=data;const ref=await uCol(col).add(r);const obj={id:ref.id,...r};D[col].push(obj);setSyncStatus('ok');return obj;}
 async function fsUpd(col,id,data){setSyncStatus('syncing');const{id:_,...r}=data;await uDoc(col,id).set(r);const i=D[col].findIndex(x=>x.id===id);if(i>=0)D[col][i]={id,...r};setSyncStatus('ok');}
 async function fsDel(col,id){setSyncStatus('syncing');await uDoc(col,id).delete();D[col]=D[col].filter(x=>x.id!==id);setSyncStatus('ok');}
@@ -878,7 +984,7 @@ window.closeM=function(id,force){if(!force){const modal=document.getElementById(
 document.querySelectorAll('.overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el&&el.id!=='ev-modal'&&el.id!=='log-modal'){};}));
 
 // NAV
-const PAGE_TITLES={dash:'대시보드',cal:'캘린더',worklog:'업무일지',ki:'이슈/취약점',support:'기술지원',projects:'프로젝트',clients:'고객사',report:'통계/리포트',export:'내보내기',search:'검색',myinfo:'내 정보'};
+const PAGE_TITLES={dash:'대시보드',cal:'캘린더',worklog:'업무일지',ki:'이슈/취약점',support:'기술지원',projects:'프로젝트',clients:'고객사',report:'통계/리포트',export:'내보내기',memo:'메모',docs:'기술 자료',search:'검색',myinfo:'내 정보'};
 const TAB_MAP={dash:'dash',cal:'cal',support:'support',clients:'clients'};
 window.go=function(p){
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
@@ -889,11 +995,11 @@ window.go=function(p){
   if(TAB_MAP[p])document.getElementById('tab-'+p)?.classList.add('active');
   const mt=document.getElementById('mob-title');if(mt)mt.textContent=PAGE_TITLES[p]||'';
   const fab=document.getElementById('fab-btn');if(fab)fab.style.display=['dash','search','report','export','myinfo'].includes(p)?'none':'flex';
-  ({dash:renderDash,cal:renderCal,worklog:renderLog,ki:renderKi,support:renderSup,projects:renderProj,clients:renderCl,report:renderReport,export:initExport,myinfo:renderMyInfo}[p]||function(){})();
+  ({dash:renderDash,cal:renderCal,worklog:renderLog,ki:renderKi,support:renderSup,projects:renderProj,clients:renderCl,report:renderReport,export:initExport,memo:renderMemo,docs:renderDocs,myinfo:renderMyInfo}[p]||function(){})();
 };
 window.showMore=function(){document.getElementById('more-bg').classList.add('open');document.getElementById('more-sheet').classList.add('open');};
 window.closeMore=function(){document.getElementById('more-bg').classList.remove('open');document.getElementById('more-sheet').classList.remove('open');};
-window.handleFab=function(){const active=document.querySelector('.page.active')?.id?.replace('page-','');const map={cal:'openEvMod',worklog:'openLogMod',ki:'openKiMod',support:'openSupMod',projects:'openProjMod',clients:'openClMod'};if(map[active])window[map[active]](null);};
+window.handleFab=function(){const active=document.querySelector('.page.active')?.id?.replace('page-','');const map={cal:'openEvMod',worklog:'openLogMod',ki:'openKiMod',support:'openSupMod',projects:'openProjMod',clients:'openClMod',memo:'openMemoMod',docs:'openDocMod'};if(map[active])window[map[active]](null);};
 
 // TAGS
 window.tagKey=function(e,p){if(e.key==='Enter'||e.key===','){e.preventDefault();const inp=document.getElementById(p+'-ti');const val=inp.value.trim().replace(/,$/,'');if(!val)return;if(!tmpTags[p])tmpTags[p]=[];if(!tmpTags[p].includes(val)){tmpTags[p].push(val);renderTW(p);}inp.value='';}};
@@ -995,11 +1101,11 @@ function renderDash(){const today=ymd(new Date()),d=new Date(),days=['일','월'
       '</div>'+
     '</div>';
   statsEl.querySelectorAll('.stat-chip').forEach(el=>{el.addEventListener('click',()=>handleStatClick(el.dataset.action));});renderMiniCal();renderWeek();document.getElementById('dash-sup').innerHTML=openSup.length?openSup.slice(0,4).map(s=>'<div class="ri" style="cursor:pointer;" onclick=\'openSupDetail(\'+s.id+\')\'><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(s.title)+'</div><div style="font-size:11px;color:var(--text2);">'+esc(s.client)+' · '+s.reqDate+'</div></div><span class="badge '+(s.status==='open'?'b-open':'b-prog')+'">'+stLbl(s.status)+'</span></div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';document.getElementById('dash-proj').innerHTML=activeProj.length?activeProj.slice(0,4).map(p=>'<div class="ri" style="cursor:pointer;" onclick=\'openProjDetail(\'+p.id+\')\'><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(p.title)+'</div><div style="font-size:11px;color:var(--text2);">'+esc(p.client)+'</div></div>'+stageBadge(p.stage)+'</div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';document.getElementById('dash-vuln').innerHTML=critKi.length?critKi.slice(0,3).map(k=>'<div class="ri" style="cursor:pointer;" onclick=\'openKiDetail(\'+k.id+\')\'><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(k.title)+'</div><div style="font-size:11px;color:var(--text2);">'+esc(k.prod)+'</div></div><span class="badge sev-C">Critical</span></div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';document.getElementById('dash-logs').innerHTML=D.logs.length?D.logs.slice().reverse().slice(0,4).map(l=>'<div class="ri" style="cursor:pointer;" onclick=\'openLogDetail(\'+l.id+\')\'><div style="flex:1;"><div style="font-size:12px;font-weight:600;">'+esc(l.title)+'</div><div style="font-size:11px;color:var(--text2);">'+l.date+(l.client?' · '+esc(l.client):'')+'</div></div></div>').join(''):'<div class="empty" style="padding:12px;">없음</div>';}
-function renderMiniCal(){const y=calD.getFullYear(),m=calD.getMonth(),days=['일','월','화','수','목','금','토'],head=document.getElementById('dash-cal-head');if(head)head.innerHTML=days.map((d,i)=>'<div style="text-align:center;font-size:10px;padding:3px 0;color:'+(i===0?'var(--red-text)':i===6?'var(--blue-text)':'var(--text3)')+'">'+d+'</div>').join('');const first=new Date(y,m,1).getDay(),last=new Date(y,m+1,0).getDate(),today=ymd(new Date()),ed={};D.events.forEach(e=>{if(e.date&&e.date.startsWith(y+'-'+p2(m+1)))ed[e.date]=(ed[e.date]||0)+1;});let h='';const prev=new Date(y,m,0).getDate();for(let i=0;i<first;i++)h+='<div class="mini-cd oth">'+(prev-first+i+1)+'</div>';for(let d=1;d<=last;d++){const ds=y+'-'+p2(m+1)+'-'+p2(d),cnt=ed[ds]||0;let c='mini-cd';if(ds===today)c+=' tod';h+='<div class="'+c+'" style="position:relative;">'+d+(cnt?'<span class="cnt-badge">'+cnt+'</span>':'')+'</div>';}const rem=(7-((first+last)%7))%7;for(let i=1;i<=rem;i++)h+='<div class="mini-cd oth">'+i+'</div>';const body=document.getElementById('dash-cal-body');if(body)body.innerHTML=h;}
-function renderWeek(){const today=ymd(new Date()),now=new Date(),day=now.getDay(),startDate=new Date(now),days=['일','월','화','수','목','금','토'];startDate.setDate(now.getDate()-day);let html='';for(let i=0;i<7;i++){const d=new Date(startDate);d.setDate(startDate.getDate()+i);const ds=ymd(d),isToday=ds===today,evs=D.events.filter(e=>e.date===ds).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));html+='<div class="week-col'+(isToday?' today':'')+'"><div class="week-col-hd">'+days[i]+' '+d.getDate()+'</div>'+evs.slice(0,3).map(e=>'<div class="week-ev '+(e.allday?'allday':'timed')+'" title="'+esc(e.title)+'">'+(e.allday?'':e.startTime?e.startTime.slice(0,5)+' ':'')+esc(e.title)+'</div>').join('')+(evs.length>3?'<div style="font-size:9px;color:var(--text3);">+'+(evs.length-3)+'건</div>':'')+'</div>';}const el=document.getElementById('dash-week');if(el)el.innerHTML=html;}
+function renderMiniCal(){const y=calD.getFullYear(),m=calD.getMonth(),days=['일','월','화','수','목','금','토'],head=document.getElementById('dash-cal-head');if(head)head.innerHTML=days.map((d,i)=>'<div style="text-align:center;font-size:10px;padding:3px 0;color:'+(i===0?'var(--red-text)':i===6?'var(--blue-text)':'var(--text3)')+'">'+d+'</div>').join('');const first=new Date(y,m,1).getDay(),last=new Date(y,m+1,0).getDate(),today=ymd(new Date()),ed={};getAllEvents().forEach(e=>{if(e.date&&e.date.startsWith(y+'-'+p2(m+1)))ed[e.date]=(ed[e.date]||0)+1;});let h='';const prev=new Date(y,m,0).getDate();for(let i=0;i<first;i++)h+='<div class="mini-cd oth">'+(prev-first+i+1)+'</div>';for(let d=1;d<=last;d++){const ds=y+'-'+p2(m+1)+'-'+p2(d),cnt=ed[ds]||0;let c='mini-cd';if(ds===today)c+=' tod';h+='<div class="'+c+'" style="position:relative;">'+d+(cnt?'<span class="cnt-badge">'+cnt+'</span>':'')+'</div>';}const rem=(7-((first+last)%7))%7;for(let i=1;i<=rem;i++)h+='<div class="mini-cd oth">'+i+'</div>';const body=document.getElementById('dash-cal-body');if(body)body.innerHTML=h;}
+function renderWeek(){const today=ymd(new Date()),now=new Date(),day=now.getDay(),startDate=new Date(now),days=['일','월','화','수','목','금','토'];startDate.setDate(now.getDate()-day);let html='';for(let i=0;i<7;i++){const d=new Date(startDate);d.setDate(startDate.getDate()+i);const ds=ymd(d),isToday=ds===today,evs=getAllEvents().filter(e=>e.date===ds).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));html+='<div class="week-col'+(isToday?' today':'')+'"><div class="week-col-hd">'+days[i]+' '+d.getDate()+'</div>'+evs.slice(0,3).map(e=>'<div class="week-ev '+(e.allday?'allday':'timed')+'" title="'+esc(e.title)+'">'+(e.allday?'':e.startTime?e.startTime.slice(0,5)+' ':'')+esc(e.title)+'</div>').join('')+(evs.length>3?'<div style="font-size:9px;color:var(--text3);">+'+(evs.length-3)+'건</div>':'')+'</div>';}const el=document.getElementById('dash-week');if(el)el.innerHTML=html;}
 
 // CALENDAR
-function renderCal(){const y=calD.getFullYear(),m=calD.getMonth(),days=['일','월','화','수','목','금','토'];document.getElementById('cal-title').textContent=y+'년 '+(m+1)+'월';document.getElementById('cal-head').innerHTML=days.map((d,i)=>'<div class="cal-ch" style="'+(i===0?'color:var(--red);':i===6?'color:var(--blue)':'')+'">'+d+'</div>').join('');const first=new Date(y,m,1).getDay(),last=new Date(y,m+1,0).getDate(),today=ymd(new Date()),evMap={};D.events.forEach(e=>{
+function renderCal(){const y=calD.getFullYear(),m=calD.getMonth(),days=['일','월','화','수','목','금','토'];document.getElementById('cal-title').textContent=y+'년 '+(m+1)+'월';document.getElementById('cal-head').innerHTML=days.map((d,i)=>'<div class="cal-ch" style="'+(i===0?'color:var(--red);':i===6?'color:var(--blue)':'')+'">'+d+'</div>').join('');const first=new Date(y,m,1).getDay(),last=new Date(y,m+1,0).getDate(),today=ymd(new Date()),evMap={};getAllEvents().forEach(e=>{
     const start=e.startDate||e.date,end2=e.endDate||start;
     if(!start)return;
     let cur=new Date(start+'T00:00:00');
@@ -1010,10 +1116,11 @@ function renderCal(){const y=calD.getFullYear(),m=calD.getMonth(),days=['일','�
       evMap[ds].push({...e,_isStart:ds===start,_isEnd:ds===end2});
       cur.setDate(cur.getDate()+1);
     }
-  });let h='';const prev=new Date(y,m,0).getDate();for(let i=0;i<first;i++)h+='<div class="cal-cd oth">'+(prev-first+i+1)+'</div>';for(let d=1;d<=last;d++){const ds=y+'-'+p2(m+1)+'-'+p2(d);const dow=(first+d-1)%7;let c='cal-cd';if(ds===today)c+=' tod';if(ds===selD)c+=' sel';const evs=evMap[ds]||[],cnt=evs.length;const dowColor=dow===0?'color:var(--red-text);':dow===6?'color:var(--blue-text);':'';h+='<div class="'+c+'" onclick="selDay(\''+ds+'\')" style="cursor:pointer;position:relative;"><div style="font-size:11px;font-weight:'+(ds===today?'700':'400')+';'+dowColor+'">'+d+'</div>'+(cnt?'<span class="cnt-badge">'+cnt+'</span>':'')+evs.slice(0,2).map(e=>'<div class="ev-pill '+(e.allday?'ev-allday':'ev-timed')+'">'+(!e._isStart?'↳ ':e.allday?'종일 ':(e.startTime||false)?e.startTime.slice(0,5)+' ':'')+esc(e.title)+(e._isEnd===false?'…':'')+'</div>').join('')+(cnt>2?'<div style="font-size:9px;color:var(--text2);">+'+(cnt-2)+'건</div>':'')+'</div>';}const rem=(7-((first+last)%7))%7;for(let i=1;i<=rem;i++)h+='<div class="cal-cd oth">'+i+'</div>';document.getElementById('cal-body').innerHTML=h;renderDayEv();}
+  });let h='';const prev=new Date(y,m,0).getDate();for(let i=0;i<first;i++)h+='<div class="cal-cd oth">'+(prev-first+i+1)+'</div>';for(let d=1;d<=last;d++){const ds=y+'-'+p2(m+1)+'-'+p2(d);const dow=(first+d-1)%7;let c='cal-cd';if(ds===today)c+=' tod';if(ds===selD)c+=' sel';const evs=evMap[ds]||[],cnt=evs.length;const dowColor=dow===0?'color:var(--red-text);':dow===6?'color:var(--blue-text);':'';h+='<div class="'+c+'" onclick="selDay(\''+ds+'\')" style="cursor:pointer;position:relative;"><div style="font-size:11px;font-weight:'+(ds===today?'700':'400')+';'+dowColor+'">'+d+'<div class="cal-add-btn" onclick="event.stopPropagation();selD=\'\'+ds+\'\';openEvMod(null)" title="일정 추가">+</div>'+'</div>'+(cnt?'<span class="cnt-badge">'+cnt+'</span>':'')+evs.slice(0,2).map(e=>'<div class="ev-pill '+(e.isGCal?'gcal':e.allday?'ev-allday':'ev-timed')+'">'+(e.isGCal?'📅 ':'')+(!e._isStart?'↳ ':e.allday?'종일 ':(e.startTime||false)?e.startTime.slice(0,5)+' ':'')+esc(e.title)+(e._isEnd===false?'…':'')+'</div>').join('')+(cnt>2?'<div style="font-size:9px;color:var(--text2);">+'+(cnt-2)+'건</div>':'')+'</div>';}const rem=(7-((first+last)%7))%7;for(let i=1;i<=rem;i++)h+='<div class="cal-cd oth">'+i+'</div>';document.getElementById('cal-body').innerHTML=h;renderDayEv();}
 window.selDay=function(d){selD=d;renderCal();};
+window.selDayAdd=function(d,e){e.stopPropagation();selD=d;openEvMod(null);};
 window.chMon=function(dir){calD.setMonth(calD.getMonth()+dir);renderCal();};
-function renderDayEv(){document.getElementById('cal-sel-lbl').textContent=selD+' 일정';const ev=D.events.filter(e=>{
+function renderDayEv(){document.getElementById('cal-sel-lbl').textContent=selD+' 일정';const ev=getAllEvents().filter(e=>{
     const start=e.startDate||e.date,end2=e.endDate||start;
     return selD>=start&&selD<=end2;
   });document.getElementById('cal-day-ev').innerHTML=ev.length?ev.map(e=>{const startDate=e.startDate||e.date,endDate=e.endDate||startDate;
@@ -1021,7 +1128,7 @@ function renderDayEv(){document.getElementById('cal-sel-lbl').textContent=selD+'
     const multiDay=startDate!==endDate;
     let ts='';
     if(e.allday){ts=multiDay?startDate+' ~ '+endDate+' (종일)':'종일';}
-    else{ts=(startT?startDate+(multiDay?' '+startT:startT):'')+(endT?' ~ '+endDate+(multiDay?' '+endT:endT):'');}return'<div class="ri"><div style="flex:1;"><div style="font-size:13px;font-weight:600;">'+esc(e.title)+'</div><div style="font-size:11px;color:var(--text2);">'+ts+(ts?' · ':'')+esc(e.type)+(e.client?' · '+esc(e.client):'')+'</div>'+(e.memo?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">'+esc(e.memo)+'</div>':'')+tagsHtml(e.tags)+'</div><div style="display:flex;gap:4px;"><button class="btn xs" onclick="openEvMod(\''+e.id+'\')">✏</button><button class="btn dg xs" onclick="delItem(\'events\',\''+e.id+'\',renderCal)">🗑</button></div></div>';}).join(''):'<div class="empty">일정 없음</div>';}
+    else{ts=(startT?startDate+(multiDay?' '+startT:startT):'')+(endT?' ~ '+endDate+(multiDay?' '+endT:endT):'');}return'<div class="ri"><div style="flex:1;"><div style="font-size:13px;font-weight:600;">'+esc(e.title)+(e.isGCal?'<span class="gcal-badge" style="margin-left:6px;">📅 Google</span>':'')+'</div><div style="font-size:11px;color:var(--text2);">'+ts+(ts?' · ':'')+esc(e.type)+(e.client?' · '+esc(e.client):'')+(e.location?' 📍'+esc(e.location):'')+'</div>'+(e.memo?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">'+esc(e.memo)+'</div>':'')+tagsHtml(e.tags)+'</div><div style="display:flex;gap:4px;">'+(e.isGCal?'<a href="'+esc(e.htmlLink||'#')+'" target="_blank" class="btn xs" title="Google 캘린더에서 열기">🔗</a>':'<button class="btn xs" onclick="openEvMod(\''+e.id+'\')">✏</button><button class="btn dg xs" onclick="delItem(\'events\',\''+e.id+'\',renderCal)">🗑</button>')+'</div></div>';}).join(''):'<div class="empty">일정 없음</div>';}
 window.openEvMod=function(id){eId.ev=id;document.getElementById('ev-mt-t').textContent=id?'일정 수정':'일정 추가';fillSel('ev-client',true);const e=id?D.events.find(x=>x.id===id):null;sv('ev-title',e?.title);sv('ev-start-date',e?.startDate||e?.date||selD);sv('ev-end-date',e?.endDate||e?.startDate||e?.date||selD);document.getElementById('ev-allday').checked=e?.allday||false;sv('ev-type',e?.type||'현장 점검');sv('ev-client',e?.client);sv('ev-memo',e?.memo);initTags('ev',e?.tags||[]);toggleEvAllday();document.getElementById('ev-modal').classList.add('open');buildTimePicker('ev-start-tp','ev-start-time',e?.startTime||'');buildTimePicker('ev-end-tp','ev-end-time',e?.endTime||'');setTimeout(calcEvDur,100);};
 window.saveEv=async function(){const t=v('ev-title');if(!t){showToast('제목을 입력해주세요');return;}const allday=document.getElementById('ev-allday').checked,startDate=v('ev-start-date');if(!startDate){showToast('시작 날짜를 입력해주세요');return;}const endDate=v('ev-end-date')||startDate,startTime=getTPValue('ev-start-time'),endTime=getTPValue('ev-end-time'),dur=calcDuration(startDate,startTime,endDate,endTime),obj={title:t,date:startDate,startDate,endDate,allday,startTime:allday?'':startTime,endTime:allday?'':endTime,duration:allday?null:dur,type:v('ev-type'),client:v('ev-client'),memo:v('ev-memo'),tags:tmpTags.ev||[]};if(eId.ev){await fsUpd('events',eId.ev,{id:eId.ev,...obj});}else{await fsAdd('events',obj);}closeM('ev-modal',true);renderCal();if(document.getElementById('page-dash').classList.contains('active'))renderDash();showToast('일정이 저장되었습니다 ✓');};
 
@@ -1083,25 +1190,7 @@ function filterByPeriod(arr,dateField){
   const{from,to}=getPeriodDates(rptPeriod);
   return arr.filter(item=>{const d=item[dateField]||item.date||item.reqDate||'';if(from&&d<from)return false;if(to&&d>to)return false;return true;});
 }
-function renderPeriodStats(){
-  const sups=filterByPeriod(D.support,'reqDate');
-  const logs=filterByPeriod(D.logs,'date');
-  const{from,to}=getPeriodDates(rptPeriod);
-  const label=rptPeriod==='all'?'전체':rptPeriod==='month'?'이번 달':rptPeriod==='week'?'이번 주':rptPeriod==='day'?'오늘':(from||'')+'~'+(to||'');
-  const el=document.getElementById('rpt-period-stats');if(!el)return;
-  const byStatus={open:0,prog:0,done:0};sups.forEach(s=>byStatus[s.status]=(byStatus[s.status]||0)+1);
-  const byType={};sups.forEach(s=>{byType[s.type]=(byType[s.type]||0)+1;});
-  const sortedT=Object.entries(byType).sort((a,b)=>b[1]-a[1]);
-  const maxT=sortedT.length?sortedT[0][1]:1;
-  el.innerHTML=
-    '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;">'+
-    '<div style="background:var(--bg3);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--text);">'+sups.length+'</div><div style="font-size:10px;color:var(--text2);">전체 지원</div></div>'+
-    '<div style="background:var(--blue-bg);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--blue);">'+byStatus.open+'</div><div style="font-size:10px;color:var(--text2);">미처리</div></div>'+
-    '<div style="background:var(--amber-bg);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--amber);">'+(byStatus.prog||0)+'</div><div style="font-size:10px;color:var(--text2);">처리중</div></div>'+
-    '<div style="background:var(--green-bg);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--green);">'+byStatus.done+'</div><div style="font-size:10px;color:var(--text2);">완료</div></div>'+
-    '<div style="background:var(--teal-bg);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--teal);">'+logs.length+'</div><div style="font-size:10px;color:var(--text2);">업무일지</div></div>'+
-    '</div>'+
-    (sortedT.length?'<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;">유형별 기술지원 ('+label+')</div>'+sortedT.map(([t,c])=>'<div class="report-bar"><div class="bar-label">'+esc(t)+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(c/maxT*100).toFixed(0)+'%;"></div></div><div class="bar-val">'+c+'건</div></div>').join(''):'<div class="empty" style="padding:16px;">해당 기간 데이터 없음</div>');
+function renderPeriodStats(){const sups=filterByPeriod(D.support,'reqDate');const logs=filterByPeriod(D.logs,'date');const{from,to}=getPeriodDates(rptPeriod);const label=rptPeriod==='all'?'전체':rptPeriod==='month'?'이번 달':rptPeriod==='week'?'이번 주':rptPeriod==='day'?'오늘':(from||'')+'~'+(to||'');const el=document.getElementById('rpt-period-stats');if(!el)return;const byStatus={open:0,prog:0,done:0};sups.forEach(s=>{byStatus[s.status]=(byStatus[s.status]||0)+1;});const byType={};sups.forEach(s=>{byType[s.type]=(byType[s.type]||0)+1;});const sortedT=Object.entries(byType).sort((a,b)=>b[1]-a[1]);const maxT=sortedT.length?sortedT[0][1]:1;el.innerHTML='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;"><div style="background:var(--bg3);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--text);">'+sups.length+'</div><div style="font-size:10px;color:var(--text2);">전체 지원</div></div><div style="background:var(--blue-bg);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--blue);">'+byStatus.open+'</div><div style="font-size:10px;color:var(--text2);">미처리</div></div><div style="background:var(--amber-bg);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--amber);">'+(byStatus.prog||0)+'</div><div style="font-size:10px;color:var(--text2);">처리중</div></div><div style="background:var(--green-bg);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--green);">'+byStatus.done+'</div><div style="font-size:10px;color:var(--text2);">완료</div></div><div style="background:var(--teal-bg);border-radius:var(--r);padding:10px 12px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--teal);">'+logs.length+'</div><div style="font-size:10px;color:var(--text2);">업무일지</div></div></div>'+(sortedT.length?'<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;">유형별 기술지원 ('+label+')</div>'+sortedT.map(([t,c])=>'<div class="report-bar"><div class="bar-label">'+esc(t)+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(c/maxT*100).toFixed(0)+'%;"></div></div><div class="bar-val">'+c+'건</div></div>').join(''):'<div class="empty" style="padding:16px;">해당 기간 데이터 없음</div>');
 }
 
 function renderReport(){const byC={},byT={},bySev={C:0,H:0,M:0,L:0},byLT={};D.support.forEach(s=>{byC[s.client]=(byC[s.client]||0)+1;byT[s.type]=(byT[s.type]||0)+1;});D.ki.forEach(k=>{bySev[k.sev]=(bySev[k.sev]||0)+1;});D.logs.forEach(l=>{const t=l.type||'고객사 지원';byLT[t]=(byLT[t]||0)+1;});const sC=Object.entries(byC).sort((a,b)=>b[1]-a[1]),mC=sC.length?sC[0][1]:1,sT=Object.entries(byT).sort((a,b)=>b[1]-a[1]),mT=sT.length?sT[0][1]:1,sLT=Object.entries(byLT).sort((a,b)=>b[1]-a[1]),mLT=sLT.length?sLT[0][1]:1;renderPeriodStats();document.getElementById('report-content').innerHTML='<div class="stat-grid" style="grid-template-columns:repeat(3,1fr);"><div class="stat"><div class="sl">전체 기술지원</div><div class="sv">'+D.support.length+'</div></div><div class="stat"><div class="sl">완료</div><div class="sv" style="color:var(--green);">'+D.support.filter(s=>s.status==='done').length+'</div></div><div class="stat"><div class="sl">미처리</div><div class="sv" style="color:var(--red);">'+D.support.filter(s=>s.status==='open').length+'</div></div></div><div class="card"><div class="sh"><h3>고객사별 기술지원</h3></div>'+(sC.length?sC.map(e=>'<div class="report-bar"><div class="bar-label">'+esc(e[0]||'미지정')+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(e[1]/mC*100).toFixed(0)+'%;"></div></div><div class="bar-val">'+e[1]+'건</div></div>').join(''):'<div class="empty">데이터 없음</div>')+'</div><div class="card"><div class="sh"><h3>업무 유형별 일지</h3></div>'+(sLT.length?sLT.map(e=>'<div class="report-bar"><div class="bar-label">'+esc(e[0])+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(e[1]/mLT*100).toFixed(0)+'%;background:var(--teal);"></div></div><div class="bar-val">'+e[1]+'건</div></div>').join(''):'<div class="empty">데이터 없음</div>')+'</div><div class="card"><div class="sh"><h3>취약점 등급 현황</h3></div>'+['C','H','M','L'].map(s=>'<div class="report-bar"><div class="bar-label">'+sevLbl(s)+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(bySev[s]/(D.ki.length||1)*100).toFixed(0)+'%;background:'+({C:'var(--red)',H:'#e68a00',M:'var(--blue)',L:'var(--green)'}[s])+';"></div></div><div class="bar-val">'+bySev[s]+'건</div></div>').join('')+'</div>';}
@@ -1226,6 +1315,265 @@ window.openLogDetail=function(id){
   if(editBtn)editBtn.onclick=function(){closeM('log-detail-modal',true);openLogMod(id);};
   document.getElementById('log-detail-modal').classList.add('open');
 };
+
+// ── MEMO ──
+function renderMemo(){
+  const q=(document.getElementById('memo-search')?.value||'').toLowerCase();
+  const cf=document.getElementById('memo-cat-f')?.value||'';
+  const list=(D.memos||[]).filter(m=>(!q||(m.title+m.content).toLowerCase().includes(q))&&(!cf||m.cat===cf));
+  const el=document.getElementById('memo-list');if(!el)return;
+  el.innerHTML='';
+  if(!list.length){el.innerHTML='<div class="card"><div class="empty">메모가 없습니다</div></div>';return;}
+  const catColors={'회의록':'var(--blue-bg)','아이디어':'var(--amber-bg)','기술 노트':'var(--teal-bg)','To-Do':'var(--purple-bg)','기타':'var(--bg3)'};
+  const catTC={'회의록':'var(--blue-text)','아이디어':'var(--amber-text)','기술 노트':'var(--teal-text)','To-Do':'var(--purple-text)','기타':'var(--text2)'};
+  list.slice().reverse().forEach(m=>{
+    const div=document.createElement('div');
+    div.className='card';div.style.cursor='pointer';
+    div.addEventListener('click',()=>openMemoDetail(m.id));
+    const bg=catColors[m.cat]||'var(--bg3)';const tc=catTC[m.cat]||'var(--text2)';
+    div.innerHTML=
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'+
+      '<div><div style="font-size:13px;font-weight:600;margin-bottom:3px;">'+esc(m.title)+'</div>'+
+      '<div style="display:flex;gap:6px;align-items:center;">'+
+      '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+bg+';color:'+tc+';">'+esc(m.cat||'기타')+'</span>'+
+      '<span style="font-size:11px;color:var(--text3);">'+esc(m.date)+'</span>'+
+      '</div></div>'+
+      '<div style="display:flex;gap:4px;">'+
+      '<button class="btn xs" id="mm-edit-'+m.id+'">✏</button>'+
+      '<button class="btn dg xs" id="mm-del-'+m.id+'">🗑</button>'+
+      '</div></div>'+
+      '<div style="font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-wrap;">'+esc((m.content||'').slice(0,200))+(m.content&&m.content.length>200?'...':'')+'</div>'+
+      tagsHtml(m.tags);
+    el.appendChild(div);
+    // Add events after innerHTML set (to avoid ID conflicts)
+    document.getElementById('mm-edit-'+m.id)?.addEventListener('click',e=>{e.stopPropagation();openMemoMod(m.id);});
+    document.getElementById('mm-del-'+m.id)?.addEventListener('click',e=>{e.stopPropagation();delItem('memos',m.id,renderMemo);});
+  });
+}
+window.openMemoMod=function(id){
+  eId.mm=id;
+  document.getElementById('memo-mt-t').textContent=id?'메모 수정':'메모 작성';
+  const m=id?D.memos.find(x=>x.id===id):null;
+  sv('mm-title',m?.title);sv('mm-cat',m?.cat||'기타');
+  sv('mm-date',m?.date||ymd(new Date()));sv('mm-content',m?.content);
+  initTags('mm',m?.tags||[]);
+  document.getElementById('memo-modal').classList.add('open');
+};
+window.saveMemo=async function(){
+  const t=v('mm-title');if(!t){showToast('제목을 입력해주세요');return;}
+  const obj={title:t,cat:v('mm-cat'),date:v('mm-date'),content:v('mm-content'),tags:tmpTags.mm||[]};
+  if(eId.mm){await fsUpd('memos',eId.mm,{id:eId.mm,...obj});}else{await fsAdd('memos',obj);}
+  closeM('memo-modal',true);renderMemo();showToast('메모가 저장되었습니다 ✓');
+};
+window.openMemoDetail=function(id){
+  const m=D.memos.find(x=>x.id===id);if(!m)return;
+  document.getElementById('memo-detail-header').innerHTML=
+    '<div><div style="font-size:16px;font-weight:700;">'+esc(m.title)+'</div>'+
+    '<div style="font-size:12px;color:var(--text2);margin-top:3px;">'+esc(m.cat||'기타')+' · '+esc(m.date)+'</div></div>';
+  document.getElementById('memo-detail-content').innerHTML=
+    (m.content?'<div style="font-size:13px;color:var(--text);white-space:pre-wrap;line-height:1.8;padding:14px;background:var(--bg3);border-radius:var(--r);">'+esc(m.content)+'</div>':'')+
+    tagsHtml(m.tags);
+  document.getElementById('memo-detail-edit-btn').onclick=function(){closeM('memo-detail-modal',true);openMemoMod(id);};
+  document.getElementById('memo-detail-modal').classList.add('open');
+};
+
+// ── TECH DOCS ──
+function renderDocs(){
+  const q=(document.getElementById('doc-search')?.value||'').toLowerCase();
+  const cf=document.getElementById('doc-cat-f')?.value||'';
+  const pf=document.getElementById('doc-prod-f')?.value||'';
+  const list=(D.docs||[]).filter(d=>(!q||(d.title+d.content+d.prod).toLowerCase().includes(q))&&(!cf||d.cat===cf)&&(!pf||d.prod===pf));
+  const el=document.getElementById('doc-list');if(!el)return;
+  el.innerHTML='';
+  if(!list.length){el.innerHTML='<div class="card"><div class="empty">등록된 기술 자료가 없습니다</div></div>';return;}
+  list.slice().reverse().forEach(d=>{
+    const div=document.createElement('div');
+    div.className='card';div.style.cursor='pointer';
+    div.addEventListener('click',()=>openDocDetail(d.id));
+    div.innerHTML=
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'+
+      '<div><div style="font-size:13px;font-weight:600;margin-bottom:3px;">'+esc(d.title)+'</div>'+
+      '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">'+
+      '<span class="badge b-open">'+esc(d.cat||'기타')+'</span>'+
+      '<span class="badge b-poc">'+esc(d.prod||'')+'</span>'+
+      (d.ver?'<span style="font-size:10px;color:var(--text3);">'+esc(d.ver)+'</span>':'')+
+      '</div></div>'+
+      '<div style="display:flex;gap:4px;">'+
+      '<button class="btn xs" id="dm-edit-'+d.id+'">✏</button>'+
+      '<button class="btn dg xs" id="dm-del-'+d.id+'">🗑</button>'+
+      '</div></div>'+
+      (d.url?'<div style="font-size:11px;margin-bottom:5px;">🔗 <a href="'+esc(d.url)+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--blue);">'+esc(d.url.slice(0,60))+(d.url.length>60?'...':'')+'</a></div>':'')+
+      '<div style="font-size:12px;color:var(--text2);line-height:1.6;">'+esc((d.content||'').slice(0,180))+(d.content&&d.content.length>180?'...':'')+'</div>'+
+      (d.filesNote?'<div style="font-size:11px;color:var(--text2);margin-top:4px;">📎 '+esc(d.filesNote)+'</div>':'')+
+      tagsHtml(d.tags);
+    el.appendChild(div);
+    document.getElementById('dm-edit-'+d.id)?.addEventListener('click',e=>{e.stopPropagation();openDocMod(d.id);});
+    document.getElementById('dm-del-'+d.id)?.addEventListener('click',e=>{e.stopPropagation();delItem('docs',d.id,renderDocs);});
+  });
+}
+window.openDocMod=function(id){
+  eId.dm=id;
+  document.getElementById('doc-mt-t').textContent=id?'기술 자료 수정':'기술 자료 등록';
+  const d=id?D.docs.find(x=>x.id===id):null;
+  sv('dm-title',d?.title);sv('dm-cat',d?.cat||'설정 가이드');sv('dm-prod',d?.prod||'NGFW');
+  sv('dm-ver',d?.ver);sv('dm-url',d?.url);sv('dm-content',d?.content);sv('dm-files',d?.filesNote);
+  initTags('dm',d?.tags||[]);
+  document.getElementById('doc-modal').classList.add('open');
+};
+window.saveDoc=async function(){
+  const t=v('dm-title');if(!t){showToast('제목을 입력해주세요');return;}
+  const obj={title:t,cat:v('dm-cat'),prod:v('dm-prod'),ver:v('dm-ver'),url:v('dm-url'),content:v('dm-content'),filesNote:v('dm-files'),tags:tmpTags.dm||[]};
+  if(eId.dm){await fsUpd('docs',eId.dm,{id:eId.dm,...obj});}else{await fsAdd('docs',obj);}
+  closeM('doc-modal',true);renderDocs();showToast('기술 자료가 저장되었습니다 ✓');
+};
+window.openDocDetail=function(id){
+  const d=D.docs.find(x=>x.id===id);if(!d)return;
+  // Reuse log-detail-modal for doc detail
+  document.getElementById('log-detail-header').innerHTML=
+    '<div><div style="font-size:16px;font-weight:700;">'+esc(d.title)+'</div>'+
+    '<div style="font-size:12px;color:var(--text2);margin-top:3px;">'+
+    '<span class="badge b-open">'+esc(d.cat)+'</span> '+
+    '<span class="badge b-poc" style="margin-left:4px;">'+esc(d.prod)+'</span>'+
+    (d.ver?' <span style="color:var(--text3);">'+esc(d.ver)+'</span>':'')+'</div></div>';
+  let html='';
+  if(d.url)html+='<div style="margin-bottom:12px;padding:10px 12px;background:var(--blue-bg);border-radius:var(--r);"><a href="'+esc(d.url)+'" target="_blank" style="color:var(--blue);font-size:12px;font-weight:600;">🔗 '+esc(d.url)+'</a></div>';
+  if(d.content)html+='<div style="font-size:13px;color:var(--text);white-space:pre-wrap;line-height:1.8;padding:14px;background:var(--bg3);border-radius:var(--r);margin-bottom:10px;">'+esc(d.content)+'</div>';
+  if(d.filesNote)html+='<div style="font-size:11px;color:var(--text2);margin-bottom:8px;">📎 '+esc(d.filesNote)+'</div>';
+  if(d.tags&&d.tags.length)html+=tagsHtml(d.tags);
+  document.getElementById('log-detail-content').innerHTML=html||'<div class="empty">내용이 없습니다</div>';
+  document.getElementById('log-detail-edit-btn').onclick=function(){closeM('log-detail-modal',true);openDocMod(id);};
+  document.getElementById('log-detail-modal').classList.add('open');
+};
+
+// ── GOOGLE CALENDAR INTEGRATION ──
+const GCAL_CLIENT_ID = '528068466624-hi910m7t1g34fhalhfsjio94nk6gq6hn.apps.googleusercontent.com';
+const GCAL_SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
+const GCAL_DISCOVERY = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+
+let gcalLoaded = false;
+let gcalSignedIn = false;
+let gcalEvents = [];  // Google Calendar 이벤트 캐시
+let tokenClient = null;
+
+// 초기화
+function initGCal() {
+  if (typeof google === 'undefined' || typeof gapi === 'undefined') return;
+  gapi.load('client', async () => {
+    await gapi.client.init({discoveryDocs: [GCAL_DISCOVERY]});
+    gcalLoaded = true;
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GCAL_CLIENT_ID,
+      scope: GCAL_SCOPES,
+      callback: async (resp) => {
+        if (resp.error) { showToast('Google 캘린더 연결 실패: ' + resp.error); return; }
+        gcalSignedIn = true;
+        updateGCalBtn();
+        await loadGCalEvents();
+        renderCal();
+        if(document.getElementById('page-dash').classList.contains('active')) renderDash();
+        showToast('Google 캘린더 연결됨 ✓');
+      },
+    });
+  });
+}
+
+// 버튼 토글
+window.toggleGCal = function() {
+  if (!gcalLoaded) {
+    showToast('Google API 로딩 중... 잠시 후 다시 시도해주세요');
+    initGCal();
+    return;
+  }
+  if (!gcalSignedIn) {
+    tokenClient.requestAccessToken({prompt: 'consent'});
+  } else {
+    // 연결 해제
+    const token = gapi.client.getToken();
+    if (token) google.accounts.oauth2.revoke(token.access_token);
+    gapi.client.setToken('');
+    gcalSignedIn = false;
+    gcalEvents = [];
+    updateGCalBtn();
+    renderCal();
+    if(document.getElementById('page-dash').classList.contains('active')) renderDash();
+    showToast('Google 캘린더 연결 해제됨');
+  }
+};
+
+function updateGCalBtn() {
+  const btn = document.getElementById('gcal-btn');
+  const status = document.getElementById('gcal-status');
+  if (!btn) return;
+  if (gcalSignedIn) {
+    btn.style.background = 'var(--green)';
+    btn.style.color = '#fff';
+    btn.style.borderColor = 'var(--green)';
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Google 캘린더 연결됨';
+    if (status) { status.style.display = 'flex'; status.innerHTML = '<span class="gcal-badge">📅 Google</span> <span style="margin-left:4px;">'+gcalEvents.length+'개 일정 불러옴 · <button class="btn xs ghost" onclick="loadGCalEvents().then(()=>renderCal())" style="padding:2px 6px;font-size:11px;">🔄 새로고침</button></span>'; }
+  } else {
+    btn.style.background = '';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'var(--green)';
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Google 캘린더';
+    if (status) status.style.display = 'none';
+  }
+}
+
+// Google Calendar 이벤트 로드 (현재 월 ±1개월)
+async function loadGCalEvents() {
+  if (!gcalSignedIn || !gapi.client.calendar) return;
+  try {
+    const now = new Date();
+    const timeMin = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+    const timeMax = new Date(now.getFullYear(), now.getMonth() + 3, 0).toISOString();
+    const resp = await gapi.client.calendar.events.list({
+      calendarId: 'primary',
+      timeMin, timeMax,
+      singleEvents: true,
+      orderBy: 'startTime',
+      maxResults: 500,
+    });
+    gcalEvents = (resp.result.items || []).map(e => {
+      const isAllDay = !!e.start.date;
+      const startDate = isAllDay ? e.start.date : e.start.dateTime?.slice(0, 10);
+      const endDate = isAllDay
+        ? new Date(new Date(e.end.date).getTime() - 86400000).toISOString().slice(0, 10)
+        : e.end.dateTime?.slice(0, 10);
+      const startTime = isAllDay ? '' : e.start.dateTime?.slice(11, 16);
+      const endTime = isAllDay ? '' : e.end.dateTime?.slice(11, 16);
+      return {
+        id: 'gcal_' + e.id,
+        title: e.summary || '(제목 없음)',
+        date: startDate,
+        startDate,
+        endDate,
+        allday: isAllDay,
+        startTime,
+        endTime,
+        type: '구글 캘린더',
+        memo: e.description || '',
+        location: e.location || '',
+        htmlLink: e.htmlLink || '',
+        isGCal: true,
+      };
+    });
+    updateGCalBtn();
+  } catch (err) {
+    showToast('Google 캘린더 로드 실패: ' + err.message);
+  }
+}
+
+// Google 이벤트와 로컬 이벤트 합치기
+function getAllEvents() {
+  if (!gcalSignedIn) return D.events;
+  // 중복 방지: 같은 날짜+제목이면 로컬 우선
+  return [...D.events, ...gcalEvents];
+}
+
+// 페이지 로드 시 자동 초기화
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(initGCal, 1000);
+});
 
 // ── NVD API INTEGRATION ──
 const NVD_API = 'https://services.nvd.nist.gov/rest/json/cves/2.0';
