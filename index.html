@@ -260,6 +260,17 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
 .sr-item:hover{border-color:var(--blue);}
 .sr-item h4{font-size:13px;font-weight:600;margin-bottom:2px;color:var(--text);}
 .sr-item p{font-size:11px;color:var(--text2);}
+/* NVD RESULT ITEM */
+.nvd-item{padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;cursor:pointer;transition:all .15s;background:var(--bg2);}
+.nvd-item:hover{border-color:var(--blue);background:var(--blue-bg);}
+.nvd-item.already{opacity:.5;cursor:default;background:var(--bg3);}
+.nvd-item.already:hover{border-color:var(--border);background:var(--bg3);}
+.nvd-sev-bar{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+.nvd-C{background:var(--red-bg);color:var(--red-text);}
+.nvd-H{background:var(--amber-bg);color:var(--amber-text);}
+.nvd-M{background:var(--blue-bg);color:var(--blue-text);}
+.nvd-L{background:var(--green-bg);color:var(--green-text);}
+.nvd-spinner{text-align:center;padding:24px;color:var(--text3);font-size:13px;}
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
@@ -451,7 +462,11 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
   <div id="log-list"></div>
 </div>
 <div id="page-ki" class="page">
-  <div class="tb"><div><div class="ptitle">알려진 이슈 / 취약점</div></div><button class="btn pr" onclick="openKiMod(null)">+ 등록</button></div>
+  <div class="tb"><div><div class="ptitle">알려진 이슈 / 취약점</div></div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn" onclick="openNVDPanel()" style="border-color:var(--blue);color:var(--blue);">🔍 NVD 조회</button>
+    <button class="btn pr" onclick="openKiMod(null)">+ 직접 등록</button>
+  </div></div>
   <div class="filter-bar">
     <input type="text" id="ki-search" placeholder="검색..." oninput="renderKi()" style="width:140px;">
     <select id="ki-type-f" onchange="renderKi()" style="width:100px;"><option value="">전체 유형</option><option>보안 취약점</option><option>버그/결함</option><option>권고사항</option></select>
@@ -610,6 +625,37 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
 
 <div class="overlay" id="ki-modal"><div class="modal">
   <div class="mt"><span id="ki-mt-t">이슈/취약점 등록</span><button class="mt-x" onclick="closeM('ki-modal')">✕</button></div>
+  <!-- NVD 자동 조회 패널 -->
+  <div style="background:var(--blue-bg);border:1px solid var(--blue);border-radius:var(--r);padding:12px 14px;margin-bottom:16px;">
+    <div style="font-size:12px;font-weight:700;color:var(--blue-text);margin-bottom:8px;">🔍 NVD에서 팔로알토 취약점 자동 조회</div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+      <select id="nvd-product-f" style="font-size:12px;padding:6px 8px;flex:1;min-width:120px;">
+        <option value="palo alto">전체 제품</option>
+        <option value="PAN-OS">PAN-OS</option>
+        <option value="GlobalProtect">GlobalProtect</option>
+        <option value="Panorama">Panorama</option>
+        <option value="Prisma Access">Prisma Access</option>
+        <option value="Cortex XDR">Cortex XDR</option>
+        <option value="Prisma SD-WAN">SD-WAN</option>
+      </select>
+      <select id="nvd-sev-f" style="font-size:12px;padding:6px 8px;flex:1;min-width:100px;">
+        <option value="">전체 등급</option>
+        <option value="CRITICAL">Critical</option>
+        <option value="HIGH">High</option>
+        <option value="MEDIUM">Medium</option>
+        <option value="LOW">Low</option>
+      </select>
+      <select id="nvd-period-f" style="font-size:12px;padding:6px 8px;flex:1;min-width:100px;">
+        <option value="30">최근 30일</option>
+        <option value="90">최근 90일</option>
+        <option value="180">최근 180일</option>
+        <option value="365">최근 1년</option>
+        <option value="0">전체</option>
+      </select>
+      <button class="btn pr sm" onclick="fetchNVD()" id="nvd-fetch-btn">🔄 조회</button>
+    </div>
+    <div id="nvd-results" style="max-height:220px;overflow-y:auto;"></div>
+  </div>
   <div class="fr"><label>제목 *</label><input type="text" id="ki-title" placeholder="예: PAN-OS Auth Bypass (CVE-2024-XXXX)"></div>
   <div class="fg3"><div class="fr"><label>유형</label><select id="ki-type-m"><option>보안 취약점</option><option>버그/결함</option><option>권고사항</option></select></div><div class="fr"><label>제품군</label><select id="ki-prod-m"><option>HW-NGFW</option><option>VM-NGFW</option><option>NGFW</option><option>Panorama</option><option>Prisma Access</option><option>Cortex XDR</option><option>GlobalProtect</option><option>SD-WAN</option><option>기타</option></select></div><div class="fr"><label>등급</label><select id="ki-sev-m"><option value="C">Critical</option><option value="H">High</option><option value="M" selected>Medium</option><option value="L">Low</option></select></div></div>
   <div class="fg2"><div class="fr"><label>CVE 번호</label><input type="text" id="ki-cve" placeholder="CVE-2024-XXXX"></div><div class="fr"><label>영향 버전</label><input type="text" id="ki-ver" placeholder="PAN-OS 10.x ~ 11.x"></div></div>
@@ -687,6 +733,54 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
   <div class="fr"><label>메모</label><textarea id="c-memo"></textarea></div>
   <div class="fr"><label>태그</label><div class="tag-wrap" id="c-tw"><input type="text" placeholder="Enter로 추가" id="c-ti" onkeydown="tagKey(event,'c')"></div></div>
   <div class="mf"><button class="btn" onclick="closeM('cl-modal',true)">취소</button><button class="btn pr" onclick="saveCl()">저장</button></div>
+</div></div>
+
+<!-- NVD 조회 패널 모달 -->
+<div class="overlay" id="nvd-modal"><div class="modal wide">
+  <div class="mt">
+    <span>🔍 NVD 팔로알토 취약점 조회</span>
+    <button class="mt-x" onclick="closeM('nvd-modal',true)">✕</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:12px;align-items:end;">
+    <div>
+      <label>제품 필터</label>
+      <select id="nvd2-product-f" style="font-size:13px;">
+        <option value="palo alto">전체 팔로알토</option>
+        <option value="PAN-OS">PAN-OS</option>
+        <option value="GlobalProtect">GlobalProtect</option>
+        <option value="Panorama">Panorama</option>
+        <option value="Prisma Access">Prisma Access</option>
+        <option value="Cortex XDR">Cortex XDR</option>
+        <option value="Prisma SD-WAN">SD-WAN</option>
+        <option value="WildFire">WildFire</option>
+        <option value="Cortex XSOAR">Cortex XSOAR</option>
+      </select>
+    </div>
+    <div>
+      <label>심각도</label>
+      <select id="nvd2-sev-f" style="font-size:13px;">
+        <option value="">전체</option>
+        <option value="CRITICAL">Critical</option>
+        <option value="HIGH">High</option>
+        <option value="MEDIUM">Medium</option>
+        <option value="LOW">Low</option>
+      </select>
+    </div>
+    <div>
+      <label>기간</label>
+      <select id="nvd2-period-f" style="font-size:13px;">
+        <option value="30">최근 30일</option>
+        <option value="90">최근 90일</option>
+        <option value="180">최근 180일</option>
+        <option value="365">최근 1년</option>
+        <option value="0">전체</option>
+      </select>
+    </div>
+    <button class="btn pr" onclick="fetchNVD2()" id="nvd2-fetch-btn" style="height:42px;">🔄 조회</button>
+  </div>
+  <div id="nvd2-status" style="font-size:12px;color:var(--text2);margin-bottom:8px;"></div>
+  <div id="nvd2-results" style="max-height:480px;overflow-y:auto;"></div>
+  <div class="mf"><button class="btn" onclick="closeM('nvd-modal',true)">닫기</button></div>
 </div></div>
 
 <div class="overlay" id="cl-detail-modal"><div class="modal wide">
@@ -1131,6 +1225,163 @@ window.openLogDetail=function(id){
   const editBtn=document.getElementById('log-detail-edit-btn');
   if(editBtn)editBtn.onclick=function(){closeM('log-detail-modal',true);openLogMod(id);};
   document.getElementById('log-detail-modal').classList.add('open');
+};
+
+// ── NVD API INTEGRATION ──
+const NVD_API = 'https://services.nvd.nist.gov/rest/json/cves/2.0';
+
+// 심각도 매핑
+function nvdSevToKi(sev){
+  if(!sev)return'M';
+  const s=sev.toUpperCase();
+  if(s==='CRITICAL')return'C';
+  if(s==='HIGH')return'H';
+  if(s==='MEDIUM')return'M';
+  if(s==='LOW')return'L';
+  return'M';
+}
+
+// 제품군 자동 감지
+function detectProd(desc){
+  const d=(desc||'').toUpperCase();
+  if(d.includes('GLOBALPROTECT'))return'GlobalProtect';
+  if(d.includes('PANORAMA'))return'Panorama';
+  if(d.includes('PRISMA ACCESS'))return'Prisma Access';
+  if(d.includes('CORTEX XDR'))return'Cortex XDR';
+  if(d.includes('WILDFIRE'))return'WildFire';
+  if(d.includes('CORTEX XSOAR'))return'Cortex XSOAR';
+  if(d.includes('SD-WAN'))return'SD-WAN';
+  if(d.includes('PAN-OS')||d.includes('PANOS'))return'NGFW';
+  return'NGFW';
+}
+
+// NVD API 호출 (ki-modal 내부용)
+window.fetchNVD=async function(){
+  const product=document.getElementById('nvd-product-f').value;
+  const sev=document.getElementById('nvd-sev-f').value;
+  const period=parseInt(document.getElementById('nvd-period-f').value);
+  const btn=document.getElementById('nvd-fetch-btn');
+  const resultsEl=document.getElementById('nvd-results');
+  btn.disabled=true;btn.textContent='조회 중...';
+  resultsEl.innerHTML='<div class="nvd-spinner">🔄 NVD에서 데이터 가져오는 중...</div>';
+  try{
+    const items=await callNVD(product,sev,period);
+    renderNVDResults(items,'nvd-results','ki-modal');
+  }catch(e){
+    resultsEl.innerHTML='<div class="nvd-spinner" style="color:var(--red);">⚠️ 오류: '+esc(e.message)+'</div>';
+  }
+  btn.disabled=false;btn.textContent='🔄 조회';
+};
+
+// NVD API 호출 (독립 모달용)
+window.fetchNVD2=async function(){
+  const product=document.getElementById('nvd2-product-f').value;
+  const sev=document.getElementById('nvd2-sev-f').value;
+  const period=parseInt(document.getElementById('nvd2-period-f').value);
+  const btn=document.getElementById('nvd2-fetch-btn');
+  const resultsEl=document.getElementById('nvd2-results');
+  const statusEl=document.getElementById('nvd2-status');
+  btn.disabled=true;btn.textContent='⏳ 조회 중...';
+  resultsEl.innerHTML='<div class="nvd-spinner">🔄 NVD에서 팔로알토 취약점 불러오는 중...<br><small style="color:var(--text3);">최대 10~20초 소요될 수 있습니다</small></div>';
+  statusEl.textContent='';
+  try{
+    const items=await callNVD(product,sev,period);
+    const already=D.ki.map(k=>k.cve).filter(Boolean);
+    const newItems=items.filter(i=>!already.includes(i.cve));
+    statusEl.textContent='총 '+items.length+'건 조회 · 미등록 '+newItems.length+'건 · 이미 등록 '+(items.length-newItems.length)+'건';
+    renderNVDResults(items,'nvd2-results','nvd-modal');
+  }catch(e){
+    resultsEl.innerHTML='<div class="nvd-spinner" style="color:var(--red);">⚠️ 오류: '+esc(e.message)+'<br><small>NVD 서버가 느릴 수 있습니다. 잠시 후 다시 시도해주세요.</small></div>';
+  }
+  btn.disabled=false;btn.textContent='🔄 조회';
+};
+
+// 실제 API 호출
+async function callNVD(product,sev,period){
+  const params=new URLSearchParams();
+  params.set('keywordSearch',product);
+  params.set('resultsPerPage','50');
+  params.set('startIndex','0');
+  if(sev)params.set('cvssV3Severity',sev);
+  if(period>0){
+    const now=new Date(),from=new Date(now);
+    from.setDate(from.getDate()-period);
+    params.set('pubStartDate',from.toISOString().slice(0,19)+'.000');
+    params.set('pubEndDate',now.toISOString().slice(0,19)+'.000');
+  }
+  const res=await fetch(NVD_API+'?'+params.toString(),{
+    headers:{'Accept':'application/json'}
+  });
+  if(!res.ok)throw new Error('NVD API 오류 ('+res.status+')');
+  const json=await res.json();
+  return (json.vulnerabilities||[]).map(v=>{
+    const cve=v.cve;
+    const id=cve.id||'';
+    const desc=(cve.descriptions||[]).find(d=>d.lang==='en')?.value||'';
+    const metrics=cve.metrics||{};
+    const cvss31=(metrics.cvssMetricV31||[])[0]?.cvssData;
+    const cvss30=(metrics.cvssMetricV30||[])[0]?.cvssData;
+    const cvss2=(metrics.cvssMetricV2||[])[0]?.cvssData;
+    const cvssData=cvss31||cvss30||cvss2;
+    const score=cvssData?.baseScore||0;
+    const sevRaw=cvss31?.baseSeverity||cvss30?.baseSeverity||cvss2?.baseSeverity||'';
+    const published=(cve.published||'').slice(0,10);
+    const refs=(cve.references||[]).map(r=>r.url).join(', ');
+    return{cve:id,desc,score,sev:sevRaw,sevCode:nvdSevToKi(sevRaw),published,refs,prod:detectProd(desc)};
+  });
+}
+
+// NVD 결과 렌더링
+function renderNVDResults(items,containerId,sourceModalId){
+  const el=document.getElementById(containerId);if(!el)return;
+  if(!items.length){el.innerHTML='<div class="nvd-spinner">조건에 맞는 취약점이 없습니다</div>';return;}
+  const already=D.ki.map(k=>k.cve).filter(Boolean);
+  el.innerHTML=items.map(item=>{
+    const isAlready=already.includes(item.cve);
+    const sevClass='nvd-'+item.sevCode;
+    return'<div class="nvd-item'+(isAlready?' already':'')+'" onclick="'+(isAlready?'':('importNVD('+JSON.stringify(item).replace(/"/g,"'")+',"'+sourceModalId+'")'))+'" title="'+(isAlready?'이미 등록된 취약점':'클릭하여 등록')+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;">'+
+      '<div style="font-size:12px;font-weight:700;color:var(--blue);">'+esc(item.cve)+'</div>'+
+      '<div style="display:flex;gap:5px;align-items:center;flex-shrink:0;">'+
+      (item.score?'<span style="font-size:11px;font-weight:700;color:var(--text2);">CVSS '+item.score+'</span>':'')+
+      (item.sevCode?'<span class="nvd-sev-bar '+sevClass+'">'+item.sev+'</span>':'')+
+      (isAlready?'<span style="font-size:10px;color:var(--text3);">등록됨</span>':'<span style="font-size:10px;color:var(--blue);">클릭 등록 →</span>')+
+      '</div></div>'+
+      '<div style="font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:3px;">'+esc(desc80(item.desc))+'</div>'+
+      '<div style="font-size:10px;color:var(--text3);">📦 '+esc(item.prod)+' · 공개일: '+item.published+'</div>'+
+      '</div>';
+  }).join('');
+}
+
+function desc80(str){return str&&str.length>120?str.slice(0,120)+'...':str||'';}
+
+// NVD 항목 → ki 모달 자동 입력
+window.importNVD=function(item,sourceModalId){
+  // 모달 닫고 ki 모달 열기
+  closeM(sourceModalId,true);
+  eId.ki=null;
+  setTimeout(()=>{
+    document.getElementById('ki-mt-t').textContent='이슈/취약점 등록';
+    sv('ki-title',(item.cve?item.cve+' ':'')+desc80(item.desc).slice(0,60));
+    sv('ki-type-m','보안 취약점');
+    sv('ki-prod-m',item.prod||'NGFW');
+    sv('ki-sev-m',item.sevCode||'M');
+    sv('ki-cve',item.cve);
+    sv('ki-ver','');
+    sv('ki-desc',item.desc);
+    sv('ki-fix','');
+    sv('ki-date',item.published||ymd(new Date()));
+    initTags('ki',[]);
+    // NVD 패널 초기화
+    const nr=document.getElementById('nvd-results');if(nr)nr.innerHTML='';
+    document.getElementById('ki-modal').classList.add('open');
+    showToast('NVD 데이터가 자동 입력되었습니다. 내용을 확인 후 저장하세요.');
+  },200);
+};
+
+// ki 페이지 독립 NVD 버튼
+window.openNVDPanel=function(){
+  document.getElementById('nvd-modal').classList.add('open');
 };
 
 // ── TIME PICKER ENGINE ──
