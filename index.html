@@ -1053,9 +1053,16 @@ function groupByWeek(items,dateField){
   const groups={};
   items.forEach(item=>{
     const dt=item[dateField]||item.date||item.reqDate||'';
-    const gk=getGroupKey(dt);
-    if(!groups[gk.sortKey])groups[gk.sortKey]={label:gk.label,sortKey:gk.sortKey,items:[]};
-    groups[gk.sortKey].items.push(item);
+    let label='날짜 없음',sortKey='00000000';
+    if(dt){
+      const d=new Date(dt+'T00:00:00');
+      const y=d.getFullYear(),m=d.getMonth()+1,w=getWeekOfMonth(dt);
+      const mp=String(m).padStart(2,'0');
+      sortKey=y+mp+String(w).padStart(2,'0');
+      label=y+'년 '+m+'월 '+w+'주차';
+    }
+    if(!groups[sortKey])groups[sortKey]={label,sortKey,items:[]};
+    groups[sortKey].items.push(item);
   });
   return Object.values(groups).sort((a,b)=>b.sortKey.localeCompare(a.sortKey));
 }
