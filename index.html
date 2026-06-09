@@ -1198,7 +1198,7 @@ window.saveKi=async function(){const t=v('ki-title');if(!t){showToast('제목을
 // SUPPORT
 function renderSup(){updSelects();const q=(v('sup-search')||'').toLowerCase(),cf=document.getElementById('sup-client-f').value,sf=document.getElementById('sup-status-f').value;
   const sorted=D.support.slice().sort((a,b)=>(b.reqDate||'').localeCompare(a.reqDate||'')||(b.id||'').localeCompare(a.id||''));
-  const list=sorted.filter(s=>(!q||(s.title+s.desc+s.client).toLowerCase().includes(q))&&(!cf||s.client===cf)&&(!sf||s.status===sf)),bMap={open:'b-open',prog:'b-prog',done:'b-done'};document.getElementById('sup-list').innerHTML=list.length?list.map((s,idx)=>{const prods=Array.isArray(s.prods)?s.prods:(s.prod?[s.prod]:[]),ts=s.allday?'종일':((s.startTime||s.endTime)?((s.reqDate||'')+(s.startTime?' '+s.startTime:'')+(s.endTime?' ~ '+(s.doneDate&&s.doneDate!==s.reqDate?s.doneDate+' ':'')+s.endTime:'')):'');return'<div class="card" style="cursor:pointer;" onclick="openSupDetail(\''+s.id+'\')"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;"><span style="font-size:10px;font-weight:700;background:var(--bg3);color:var(--text2);padding:2px 8px;border-radius:20px;flex-shrink:0;">No.'+( list.length-idx)+'</span><span style="font-size:13px;font-weight:600;">'+esc(s.title)+'</span></div><div style="font-size:11px;color:var(--text2);margin-top:1px;">'+esc(s.client)+' · '+esc(s.type)+' · 요청: '+s.reqDate+(ts?' · '+ts:'')+(s.doneDate&&s.status==='done'?' → 완료: '+s.doneDate:'')+((s.history&&s.history.length)?' · <span style="font-size:10px;font-weight:700;color:var(--teal);background:var(--teal-bg);padding:1px 6px;border-radius:10px;">📋 이력 '+(s.history.length)+'건</span>':'')+'</div>'+(prods.length?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">📦 '+prods.map(p=>esc(p)).join(', ')+'</div>':'')+'</div><div style="display:flex;gap:5px;align-items:center;"><span class="badge '+(bMap[s.status]||'b-open')+'">'+stLbl(s.status)+'</span><button class="btn xs" onclick="openSupHistory(\''+s.id+'\')">📋 이력</button><button class="btn xs" onclick="openSupMod(\''+s.id+'\')">✏</button><button class="btn dg xs" onclick="delItem(\'support\',\''+s.id+'\',renderSup)">🗑</button></div></div>'+(s.desc?'<div style="font-size:12px;margin-bottom:6px;">'+esc(s.desc)+'</div>':'')+(s.result?'<div style="font-size:11px;color:var(--green-text);background:var(--green-bg);padding:5px 9px;border-radius:8px;">✓ '+esc(s.result)+'</div>':'')+(s.filesNote?'<div style="font-size:11px;color:var(--text2);margin-top:5px;">📎 '+esc(s.filesNote)+'</div>':'')+tagsHtml(s.tags)+'</div>';}).join(''):'<div class="card"><div class="empty">기술지원 내역이 없습니다</div></div>';}
+  const list=sorted.filter(s=>(!q||(s.title+s.desc+s.client).toLowerCase().includes(q))&&(!cf||s.client===cf)&&(!sf||s.status===sf)),bMap={open:'b-open',prog:'b-prog',done:'b-done'};document.getElementById('sup-list').innerHTML=list.length?list.map((s,idx)=>{const prods=Array.isArray(s.prods)?s.prods:(s.prod?[s.prod]:[]),ts=s.allday?'종일':((s.startTime||s.endTime)?((s.reqDate||'')+(s.startTime?' '+s.startTime:'')+(s.endTime?' ~ '+(s.doneDate&&s.doneDate!==s.reqDate?s.doneDate+' ':'')+s.endTime:'')):'');return'<div class="card" style="cursor:pointer;" onclick="openSupHistory(\''+s.id+'\')"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;"><span style="font-size:10px;font-weight:700;background:var(--bg3);color:var(--text2);padding:2px 8px;border-radius:20px;flex-shrink:0;">No.'+( list.length-idx)+'</span><span style="font-size:13px;font-weight:600;">'+esc(s.title)+'</span></div><div style="font-size:11px;color:var(--text2);margin-top:1px;">'+esc(s.client)+' · '+esc(s.type)+' · 요청: '+s.reqDate+(ts?' · '+ts:'')+(s.doneDate&&s.status==='done'?' → 완료: '+s.doneDate:'')+((s.history&&s.history.length)?' · <span style="font-size:10px;font-weight:700;color:var(--teal);background:var(--teal-bg);padding:1px 6px;border-radius:10px;">📋 이력 '+(s.history.length)+'건</span>':'')+'</div>'+(prods.length?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">📦 '+prods.map(p=>esc(p)).join(', ')+'</div>':'')+'</div><div style="display:flex;gap:5px;align-items:center;"><span class="badge '+(bMap[s.status]||'b-open')+'">'+stLbl(s.status)+'</span><button class="btn xs" onclick="openSupMod(\''+s.id+'\')">✏</button><button class="btn dg xs" onclick="delItem(\'support\',\''+s.id+'\',renderSup)">🗑</button></div></div>'+(s.desc?'<div style="font-size:12px;margin-bottom:6px;">'+esc(s.desc)+'</div>':'')+(s.result?'<div style="font-size:11px;color:var(--green-text);background:var(--green-bg);padding:5px 9px;border-radius:8px;">✓ '+esc(s.result)+'</div>':'')+(s.filesNote?'<div style="font-size:11px;color:var(--text2);margin-top:5px;">📎 '+esc(s.filesNote)+'</div>':'')+tagsHtml(s.tags)+'</div>';}).join(''):'<div class="card"><div class="empty">기술지원 내역이 없습니다</div></div>';}
 window.openSupMod=function(id){eId.sup=id;document.getElementById('sup-mt-t').textContent=id?'기술지원 수정':'기술지원 등록';fillSel('sp-client',false);const s=id?D.support.find(x=>x.id===id):null;sv('sp-client',s?.client);sv('sp-type',s?.type||'장애 처리');sv('sp-title',s?.title);sv('sp-req-date',s?.reqDate||ymd(new Date()));sv('sp-status',s?.status||'open');initProds(s?.prods||(s?.prod?[s.prod]:[]));document.getElementById('sp-allday').checked=s?.allday||false;sv('sp-desc',s?.desc);sv('sp-result',s?.result);sv('sp-files',s?.filesNote);initTags('sp',s?.tags||[]);toggleSupAllday();sv('sp-done',s?.doneDate||s?.reqDate||ymd(new Date()));document.getElementById('sp-prod-opts').style.display='none';document.getElementById('sup-modal').classList.add('open');buildTimePicker('sp-start-tp','sp-start-time',s?.startTime||'');buildTimePicker('sp-end-tp','sp-end-time',s?.endTime||'');setTimeout(calcSupDur,100);};
 window.saveSup=async function(){const t=v('sp-title');if(!t){showToast('제목을 입력해주세요');return;}const reqDate=v('sp-req-date');if(!reqDate){showToast('요청일을 입력해주세요');return;}const allday=document.getElementById('sp-allday').checked,startTime=getTPValue('sp-start-time'),endTime=getTPValue('sp-end-time'),doneDate=v('sp-done'),dur=allday?null:calcDuration(reqDate,startTime,doneDate||reqDate,endTime),obj={client:v('sp-client'),type:v('sp-type'),title:t,reqDate,status:v('sp-status'),prods:selProds,allday,startTime:allday?'':startTime,endTime:allday?'':endTime,doneDate:doneDate||reqDate,duration:dur,desc:v('sp-desc'),result:v('sp-result'),filesNote:v('sp-files'),tags:tmpTags.sp||[]};let saved;if(eId.sup){await fsUpd('support',eId.sup,{id:eId.sup,...obj});saved={id:eId.sup,...obj};}else{saved=await fsAdd('support',obj);}await autoCreateLog(saved);closeM('sup-modal',true);renderSup();showToast('기술지원이 저장되었습니다 ✓');};
 async function autoCreateLog(sup){if(!sup.title||!sup.reqDate)return;const existing=D.logs.find(l=>l.autoFromSup===sup.id);const ts=sup.allday?'종일':(sup.startTime||'')+(sup.endTime?' ~ '+sup.endTime:'');const obj={date:sup.reqDate,type:'고객사 지원',client:sup.client||'',title:'[기술지원] '+sup.title,content:(ts?'시간: '+ts+'\n':'')+(sup.desc||''),action:sup.result||'',filesNote:sup.filesNote||'',tags:sup.tags||[],autoFromSup:sup.id};if(existing){await fsUpd('logs',existing.id,{id:existing.id,...obj});}else{await fsAdd('logs',obj);}if(document.getElementById('page-worklog')?.classList.contains('active'))renderLog();}
@@ -1382,64 +1382,94 @@ window.openSupHistory=function(id){
   const s=D.support.find(x=>x.id===id);if(!s)return;
   const bMap={open:'b-open',prog:'b-prog',done:'b-done'};
   const prods=Array.isArray(s.prods)?s.prods:(s.prod?[s.prod]:[]);
-  // Header
+  // ── Header ──
   document.getElementById('log-detail-header').innerHTML=
-    '<div><div style="font-size:16px;font-weight:700;color:var(--text);">'+esc(s.title)+'</div>'+
+    '<div style="flex:1;"><div style="font-size:16px;font-weight:700;color:var(--text);">'+esc(s.title)+'</div>'+
     '<div style="font-size:12px;color:var(--text2);margin-top:4px;">'+
     esc(s.client)+' · '+esc(s.type)+
     ' · <span class="badge '+(bMap[s.status]||'b-open')+'">'+stLbl(s.status)+'</span></div>'+
-    '<div style="font-size:12px;color:var(--text2);margin-top:2px;">요청일: '+s.reqDate+(s.doneDate?' → 완료: '+s.doneDate:'')+(s.startTime?' · '+s.startTime+(s.endTime?' ~ '+s.endTime:''):'')+'</div>'+
+    '<div style="font-size:12px;color:var(--text2);margin-top:2px;">요청일: '+s.reqDate+
+    (s.doneDate?' → 완료: '+s.doneDate:'')+
+    (s.startTime?' · '+s.startTime+(s.endTime?' ~ '+s.endTime:''):'')+'</div>'+
     (prods.length?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">📦 '+prods.map(p=>esc(p)).join(', ')+'</div>':'')+
     '</div>';
-  // Content: desc/result + timeline
-  let html='';
-  if(s.desc)html+='<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;">요청 내용</div><div style="font-size:13px;white-space:pre-wrap;padding:10px;background:var(--bg3);border-radius:var(--r);">'+esc(s.desc)+'</div></div>';
-  if(s.result)html+='<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;">처리 결과</div><div style="font-size:13px;color:var(--green-text);background:var(--green-bg);padding:10px;border-radius:var(--r);">✓ '+esc(s.result)+'</div></div>';
-  // Timeline section
+  // ── Content ──
+  const el=document.getElementById('log-detail-content');
+  el.innerHTML='';
+  // Desc
+  if(s.desc){
+    const d=document.createElement('div');d.style.marginBottom='12px';
+    d.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;">요청 / 증상 내용</div>'+
+      '<div style="font-size:13px;white-space:pre-wrap;padding:10px;background:var(--bg3);border-radius:var(--r);">'+esc(s.desc)+'</div>';
+    el.appendChild(d);
+  }
+  if(s.result){
+    const r=document.createElement('div');r.style.marginBottom='12px';
+    r.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;">처리 결과</div>'+
+      '<div style="font-size:13px;color:var(--green-text);background:var(--green-bg);padding:10px;border-radius:var(--r);">✓ '+esc(s.result)+'</div>';
+    el.appendChild(r);
+  }
+  // ── Timeline header ──
   const hist=(s.history||[]).slice().sort((a,b)=>(a.date+' '+(a.time||'')).localeCompare(b.date+' '+(b.time||'')));
   const stMap={open:'미처리',prog:'처리중',done:'완료'};
   const stColor={open:'var(--blue)',prog:'var(--amber)',done:'var(--green)'};
   const stBg={open:'var(--blue-bg)',prog:'var(--amber-bg)',done:'var(--green-bg)'};
-  html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-top:4px;">'+
-    '<div style="font-size:14px;font-weight:700;color:var(--text);">진행 이력</div>'+
-    '<button class="btn xs pr" id="sup-hist-add-btn">+ 이력 추가</button>'+
-    '</div>';
+  const tlHeader=document.createElement('div');
+  tlHeader.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;'+(s.desc||s.result?'padding-top:12px;border-top:1px solid var(--border);':'');
+  tlHeader.innerHTML='<div style="font-size:14px;font-weight:700;color:var(--text);">진행 이력</div>';
+  const addBtn=document.createElement('button');
+  addBtn.className='btn xs pr';addBtn.textContent='+ 이력 추가';
+  addBtn.addEventListener('click',function(){
+    sv('sh-date',ymd(new Date()));sv('sh-time','');
+    sv('sh-status',s.status||'open');sv('sh-engineer','');
+    sv('sh-content','');sv('sh-files','');
+    document.getElementById('sh-sup-id').value=s.id;
+    document.getElementById('sup-hist-add-modal').classList.add('open');
+  });
+  tlHeader.appendChild(addBtn);
+  el.appendChild(tlHeader);
+  // ── Timeline ──
   if(hist.length){
-    html+='<div class="timeline">';
+    const tl=document.createElement('div');tl.className='timeline';
     hist.forEach((h,i)=>{
-      html+='<div class="tl-item'+(h.status==="done"?" done":"")+'">'+
+      const item=document.createElement('div');
+      item.className='tl-item'+(h.status==='done'?' done':'');
+      item.innerHTML=
         '<div class="tl-date" style="display:flex;align-items:center;gap:6px;">'+
         '<span style="font-weight:600;">'+esc(h.date)+(h.time?' · <b>'+esc(h.time)+'</b>':'')+'</span>'+
         ' · <span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:'+stBg[h.status||'open']+';color:'+stColor[h.status||'open']+';">'+stMap[h.status||'open']+'</span>'+
         (h.engineer?' · <span style="font-size:11px;color:var(--text3);">'+esc(h.engineer)+'</span>':'')+
-        '<span class="btn dg xs" style="margin-left:auto;font-size:10px;cursor:pointer;" data-del-sup="'+s.id+'" data-del-idx="'+i+'">🗑</span>'+
+        '<span class="btn dg xs" style="margin-left:auto;font-size:10px;cursor:pointer;padding:2px 8px;" data-del-sup="'+s.id+'" data-del-idx="'+i+'">🗑</span>'+
         '</div>'+
         '<div class="tl-content" style="white-space:pre-wrap;margin-top:4px;">'+esc(h.content)+
         (h.files?'<div style="font-size:11px;color:var(--text2);margin-top:4px;">📎 '+esc(h.files)+'</div>':'')+
-        '</div></div>';
+        '</div>';
+      item.querySelector('[data-del-sup]').addEventListener('click',function(){
+        delSupHistory(this.dataset.delSup,parseInt(this.dataset.delIdx));
+      });
+      tl.appendChild(item);
     });
-    html+='</div>';
+    el.appendChild(tl);
   }else{
-    html+='<div style="font-size:12px;color:var(--text3);padding:14px;background:var(--bg3);border-radius:var(--r);text-align:center;">아직 작업 이력이 없습니다</div>';
+    const empty=document.createElement('div');
+    empty.style.cssText='font-size:12px;color:var(--text3);padding:14px;background:var(--bg3);border-radius:var(--r);text-align:center;';
+    empty.textContent='아직 작업 이력이 없습니다';
+    el.appendChild(empty);
   }
-  html+='<input type="hidden" id="sh-sup-id" value="'+s.id+'">';
-  document.getElementById('log-detail-content').innerHTML=html;
-  // Delete listeners
-  document.querySelectorAll('[data-del-sup]').forEach(el=>{
-    el.addEventListener('click',function(){delSupHistory(this.dataset.delSup,parseInt(this.dataset.delIdx));});
-  });
-  // + 이력 추가 버튼 → prog-modal 스타일 소형 팝업
-  document.getElementById('sup-hist-add-btn').addEventListener('click',function(){
-    sv('sh-date',ymd(new Date()));sv('sh-time','');
-    sv('sh-status',s.status||'open');sv('sh-engineer','');
-    sv('sh-content','');sv('sh-files','');
-    document.getElementById('sup-hist-add-modal').classList.add('open');
-  });
-  // Bottom buttons: 닫기 only
+  // Hidden sup id
+  const hiddenId=document.createElement('input');
+  hiddenId.type='hidden';hiddenId.id='sh-sup-id';hiddenId.value=s.id;
+  el.appendChild(hiddenId);
+  // ── Bottom buttons: 닫기 + ✏ 수정 ──
   const editBtn=document.getElementById('log-detail-edit-btn');
-  if(editBtn){editBtn.style.display='none';}
+  if(editBtn){
+    editBtn.style.display='';
+    editBtn.textContent='✏ 수정';
+    editBtn.style.cssText='';
+    editBtn.onclick=function(){closeM('log-detail-modal',true);openSupMod(id);};
+  }
   document.getElementById('log-detail-modal').classList.add('open');
-};
+}
 window.saveSupHistory=async function(){
   const id=document.getElementById('sh-sup-id').value;
   const cnt=v('sh-content');
