@@ -1421,7 +1421,11 @@ window.openSupHistory=function(id){
     el.appendChild(d);
   }
     // ── Timeline header ──
-  const hist=(s.history||[]).slice().sort((a,b)=>(b.date+' '+(b.startTime||b.time||'')).localeCompare(a.date+' '+(a.startTime||a.time||'')));
+  // s.result가 있으면 진행이력 마지막(가장 오래된)에 가상 항목으로 포함
+  const baseHist=s.result?[{date:s.reqDate||'',startTime:s.startTime||'',endTime:s.endTime||'',status:s.status||'open',engineer:'',content:s.result,files:'',_isResult:true}]:[];
+  const userHist=(s.history||[]).filter(h=>!h._isResult);
+  const mergedHist=[...userHist,...baseHist];
+  const hist=mergedHist.slice().sort((a,b)=>(b.date+' '+(b.startTime||b.time||'')).localeCompare(a.date+' '+(a.startTime||a.time||'')));
   const stMap={open:'미처리',prog:'처리중',done:'완료'};
   const stColor={open:'var(--blue)',prog:'var(--amber)',done:'var(--green)'};
   const stBg={open:'var(--blue-bg)',prog:'var(--amber-bg)',done:'var(--green-bg)'};
@@ -1444,29 +1448,35 @@ window.openSupHistory=function(id){
   // ── Timeline ──
   if(hist.length){
     const tl=document.createElement('div');tl.className='timeline';
-    hist.forEach((h,i)=>{
+    // Map display items back to original history indices for edit/del
+  const histWithOrigIdx=hist.map(h=>{
+    if(h._isResult)return{...h,_origIdx:-1};
+    const origIdx=s.history.findIndex(x=>x===h||(x.date===h.date&&x.content===h.content&&x.startTime===h.startTime));
+    return{...h,_origIdx:origIdx};
+  });
+  histWithOrigIdx.forEach((h,i)=>{
       const item=document.createElement('div');
       item.className='tl-item'+(h.status==='done'?' done':'');
       const timeStr=(h.startTime||'')+(h.endTime?' ~ '+h.endTime:'');
+      const isBase=h._isResult===true;
       item.innerHTML=
         '<div class="tl-date" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'+
         '<span style="font-weight:600;">'+esc(h.date)+(timeStr?' · <b>'+esc(timeStr)+'</b>':'')+'</span>'+
         ' · <span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:'+stBg[h.status||'open']+';color:'+stColor[h.status||'open']+';">'+stMap[h.status||'open']+'</span>'+
         (h.engineer?' · <span style="font-size:11px;color:var(--text3);">'+esc(h.engineer)+'</span>':'')+
-        '<div style="margin-left:auto;display:flex;gap:4px;">'+
-        '<span class="btn xs" style="font-size:10px;cursor:pointer;padding:2px 8px;" data-edit-sup="'+s.id+'" data-edit-idx="'+i+'">✏</span>'+
-        '<span class="btn dg xs" style="font-size:10px;cursor:pointer;padding:2px 8px;" data-del-sup="'+s.id+'" data-del-idx="'+i+'">🗑</span>'+
-        '</div>'+
+        (isBase?'<span style="font-size:10px;color:var(--text3);margin-left:4px;">처리내용</span>':'<div style="margin-left:auto;display:flex;gap:4px;"><span class="btn xs" style="font-size:10px;cursor:pointer;padding:2px 8px;" data-edit-sup="'+s.id+'" data-edit-idx="'+h._origIdx+'">✏</span><span class="btn dg xs" style="font-size:10px;cursor:pointer;padding:2px 8px;" data-del-sup="'+s.id+'" data-del-idx="'+h._origIdx+'">🗑</span></div>')+
         '</div>'+
         '<div class="tl-content" style="white-space:pre-wrap;margin-top:4px;">'+esc(h.content)+
         (h.files?'<div style="font-size:11px;color:var(--text2);margin-top:4px;">📎 '+esc(h.files)+'</div>':'')+
         '</div>';
-      item.querySelector('[data-del-sup]').addEventListener('click',function(){
-        delSupHistory(this.dataset.delSup,parseInt(this.dataset.delIdx));
-      });
-      item.querySelector('[data-edit-sup]').addEventListener('click',function(){
-        editSupHistory(this.dataset.editSup,parseInt(this.dataset.editIdx));
-      });
+      if(!isBase){
+        item.querySelector('[data-del-sup]').addEventListener('click',function(){
+          delSupHistory(this.dataset.delSup,parseInt(this.dataset.delIdx));
+        });
+        item.querySelector('[data-edit-sup]').addEventListener('click',function(){
+          editSupHistory(this.dataset.editSup,parseInt(this.dataset.editIdx));
+        });
+      }
       tl.appendChild(item);
     });
     el.appendChild(tl);
