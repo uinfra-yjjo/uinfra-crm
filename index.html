@@ -1049,15 +1049,15 @@ function getDateGroupKey(dateStr){
   const w=getWeekOfMonth(dateStr);
   return y+'년 '+m+'월||'+y+'년 '+m+'월 '+w+'주차';
 }
-function groupByWeek(items, dateField){
+function groupByWeek(items,dateField){
   const groups={};
-  const order=[];
   items.forEach(item=>{
-    const key=getDateGroupKey(item[dateField]);
-    if(!groups[key]){groups[key]=[];order.push(key);}
-    groups[key].push(item);
+    const dt=item[dateField]||item.date||item.reqDate||'';
+    const gk=getGroupKey(dt);
+    if(!groups[gk.sortKey])groups[gk.sortKey]={label:gk.label,sortKey:gk.sortKey,items:[]};
+    groups[gk.sortKey].items.push(item);
   });
-  return {groups, order};
+  return Object.values(groups).sort((a,b)=>b.sortKey.localeCompare(a.sortKey));
 }
 function p2(n){return String(n).padStart(2,'0');}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
