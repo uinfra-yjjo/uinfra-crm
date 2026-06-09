@@ -1116,6 +1116,7 @@ function renderDash(){const today=ymd(new Date()),d=new Date(),days=['일','월'
   const clActive=D.clients.filter(c=>{const hasSup=D.support.some(s=>s.client===c.name&&s.status!=='done');return hasSup;}).length;
   const clProj=D.clients.filter(c=>D.projects.some(p=>p.client===c.name&&p.stage!=='done'&&p.stage!=='hold')).length;
   const supOpen=D.support.filter(s=>s.status==='open').length;
+  const supProg=D.support.filter(s=>s.status==='prog').length;
   const supDone=D.support.filter(s=>s.status==='done').length;
   const projPlan=D.projects.filter(p=>['prop','poc','bmt'].includes(p.stage)).length;
   const projProg=D.projects.filter(p=>p.stage==='deploy').length;
@@ -1136,6 +1137,7 @@ function renderDash(){const today=ymd(new Date()),d=new Date(),days=['일','월'
       '<div class="stat-group-title">🔧 지원 내역 <span style="font-weight:400;color:var(--text3);">('+D.support.length+')</span></div>'+
       '<div class="stat-chips">'+
         '<div class="stat-chip" data-action="sup-open"><div class="stat-chip-val" style="color:var(--blue);">'+supOpen+'</div><div class="stat-chip-lbl">미처리</div></div>'+
+        '<div class="stat-chip" data-action="sup-prog"><div class="stat-chip-val" style="color:var(--amber);">'+supProg+'</div><div class="stat-chip-lbl">처리중</div></div>'+
         '<div class="stat-chip" data-action="sup-done"><div class="stat-chip-val" style="color:var(--green);">'+supDone+'</div><div class="stat-chip-lbl">처리완료</div></div>'+
       '</div>'+
     '</div>'+
@@ -1293,6 +1295,8 @@ window.handleStatClick=function(action){
     go('clients');
   } else if(action==='sup-open'){
     go('support');setFilter('sup-status-f','open',renderSup);
+  } else if(action==='sup-prog'){
+    go('support');setFilter('sup-status-f','prog',renderSup);
   } else if(action==='sup-done'){
     go('support');setFilter('sup-status-f','done',renderSup);
   } else if(action==='proj-plan'){
