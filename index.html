@@ -624,6 +624,11 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
   <div class="fr"><label>담당자</label><input type="text" id="sh-engineer" placeholder="예: 조용준 프로"></div>
   <div class="fr"><label>작업 내용 *</label><textarea id="sh-content" class="tall" placeholder="작업 내용, 확인 사항, 처리 결과 등..."></textarea></div>
   <div class="fr"><label>첨부파일명</label><input type="text" id="sh-files" placeholder="예: tsf_20240101.tar.gz"></div>
+  <div class="fr"><label>세부 정보 <span style="font-size:10px;color:var(--text3);">(기술적 상세내용)</span></label><textarea id="sh-detail" class="tall" placeholder="예: PA-3220 S/N: PA123456&#10;CLI 명령어, 설정 변경 내용 등"></textarea></div>
+  <div style="background:var(--blue-bg);border:1px solid var(--blue);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+    <input type="checkbox" id="sh-auto-log" style="width:16px;height:16px;cursor:pointer;">
+    <label for="sh-auto-log" style="font-size:13px;font-weight:600;color:var(--blue-text);cursor:pointer;margin:0;">📝 업무일지 자동 등록 <span style="font-size:11px;font-weight:400;">(이력 날짜로 업무일지 자동 생성)</span></label>
+  </div>
   <div class="mf">
     <button class="btn" onclick="closeM('sup-hist-add-modal',true)">취소</button>
     <button class="btn pr" onclick="saveSupHistory()">💾 저장</button>
@@ -851,8 +856,14 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
     </div>
   </div>
   <div class="fr"><label>처리 상태</label><select id="sp-status"><option value="open">미처리</option><option value="prog">처리중</option><option value="done">완료</option></select></div>
-  <!-- 고객 요청일 -->
-  <div class="fr"><label>📌 고객 요청일 *</label><input type="date" id="sp-req-date"></div>
+  <!-- 고객 요청일 (선택) -->
+  <div style="background:var(--bg3);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">📌 고객 요청일 <span style="font-size:10px;font-weight:400;color:var(--text3);">(선택)</span></div>
+    <div class="fg2">
+      <div class="fr" style="margin-bottom:0;"><label>날짜</label><input type="date" id="sp-req-date"></div>
+      <div class="fr" style="margin-bottom:0;"><label>시간</label><input type="time" id="sp-req-time"></div>
+    </div>
+  </div>
   <!-- 기술지원 시작 -->
   <div style="background:var(--bg3);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
     <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">🔧 기술지원 시작</div>
@@ -873,6 +884,12 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
   <div id="sp-dur-row" style="margin-bottom:14px;"></div>
   <div class="fr"><label>요청/증상 내용</label><textarea id="sp-desc" class="tall"></textarea></div>
   <div class="fr"><label>처리 내용 / 결과</label><textarea id="sp-result" class="tall"></textarea></div>
+  <div class="fr"><label>세부 정보 <span style="font-size:10px;color:var(--text3);">(환경, 버전, IP, 설정값 등 기술적 상세내용)</span></label><textarea id="sp-detail" class="tall" placeholder="예: PA-3220 S/N: PA123456, PAN-OS 11.1.6-h3&#10;eth1/1 IP: 192.168.1.1/24&#10;HA Active 장비 기준 작업"></textarea></div>
+  <!-- 업무일지 자동 등록 -->
+  <div style="background:var(--blue-bg);border:1px solid var(--blue);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+    <input type="checkbox" id="sp-auto-log" style="width:16px;height:16px;cursor:pointer;" checked>
+    <label for="sp-auto-log" style="font-size:13px;font-weight:600;color:var(--blue-text);cursor:pointer;margin:0;">📝 업무일지 자동 등록 <span style="font-size:11px;font-weight:400;">(저장 시 해당 날짜로 업무일지 자동 생성)</span></label>
+  </div>
 
   <div class="fr"><label>첨부파일명</label><input type="text" id="sp-files" placeholder="예: ha_failover.log"></div>
   <div class="fr"><label>태그</label><div class="tag-wrap" id="sp-tw"><input type="text" placeholder="Enter로 추가" id="sp-ti" onkeydown="tagKey(event,'sp')"></div></div>
@@ -1215,8 +1232,8 @@ window.saveKi=async function(){const t=v('ki-title');if(!t){showToast('제목을
 function renderSup(){updSelects();const q=(v('sup-search')||'').toLowerCase(),cf=document.getElementById('sup-client-f').value,sf=document.getElementById('sup-status-f').value;
   const sorted=D.support.slice().sort((a,b)=>(b.reqDate||'').localeCompare(a.reqDate||'')||(b.id||'').localeCompare(a.id||''));
   const list=sorted.filter(s=>(!q||(s.title+s.desc+s.client).toLowerCase().includes(q))&&(!cf||s.client===cf)&&(!sf||s.status===sf)),bMap={open:'b-open',prog:'b-prog',done:'b-done'};document.getElementById('sup-list').innerHTML=list.length?list.map((s,idx)=>{const prods=Array.isArray(s.prods)?s.prods:(s.prod?[s.prod]:[]),ts=s.allday?'종일':((s.startTime||s.endTime)?((s.reqDate||'')+(s.startTime?' '+s.startTime:'')+(s.endTime?' ~ '+(s.doneDate&&s.doneDate!==s.reqDate?s.doneDate+' ':'')+s.endTime:'')):'');return'<div class="card" style="cursor:pointer;" onclick="openSupHistory(\''+s.id+'\')"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;"><span style="font-size:10px;font-weight:700;background:var(--bg3);color:var(--text2);padding:2px 8px;border-radius:20px;flex-shrink:0;">No.'+( list.length-idx)+'</span><span style="font-size:13px;font-weight:600;">'+esc(s.title)+'</span></div><div style="font-size:11px;color:var(--text2);margin-top:1px;">'+esc(s.client)+' · '+esc(s.type)+' · 요청: '+s.reqDate+(s.startDate&&s.startDate!==s.reqDate?' · 시작: '+s.startDate:'')+(ts?' · '+ts:'')+(s.doneDate&&s.status==='done'?' → 완료: '+s.doneDate:'')+((s.history&&s.history.length)?' · <span style="font-size:10px;font-weight:700;color:var(--teal);background:var(--teal-bg);padding:1px 6px;border-radius:10px;">📋 이력 '+(s.history.length)+'건</span>':'')+'</div>'+(prods.length?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">📦 '+prods.map(p=>esc(p)).join(', ')+'</div>':'')+'</div><div style="display:flex;gap:5px;align-items:center;"><span class="badge '+(bMap[s.status]||'b-open')+'">'+stLbl(s.status)+'</span><button class="btn xs" onclick="openSupMod(\''+s.id+'\')">✏</button><button class="btn dg xs" onclick="delItem(\'support\',\''+s.id+'\',renderSup)">🗑</button></div></div>'+(s.desc?'<div style="font-size:12px;margin-bottom:6px;">'+esc(s.desc)+'</div>':'')+(()=>{const latestHist=(s.history||[]).length?s.history.slice().sort((a,b)=>(b.date+' '+(b.startTime||b.time||'')).localeCompare(a.date+' '+(a.startTime||a.time||'')))[0]:null;const displayResult=latestHist?latestHist.content:s.result;return displayResult?'<div style="font-size:11px;color:var(--green-text);background:var(--green-bg);padding:5px 9px;border-radius:8px;white-space:pre-wrap;">✓ '+esc(displayResult.slice(0,150))+(displayResult.length>150?'...':'')+'</div>':'';})()+(s.filesNote?'<div style="font-size:11px;color:var(--text2);margin-top:5px;">📎 '+esc(s.filesNote)+'</div>':'')+tagsHtml(s.tags)+'</div>';}).join(''):'<div class="card"><div class="empty">기술지원 내역이 없습니다</div></div>';}
-window.openSupMod=function(id){eId.sup=id;document.getElementById('sup-mt-t').textContent=id?'기술지원 수정':'기술지원 등록';fillSel('sp-client',false);const s=id?D.support.find(x=>x.id===id):null;sv('sp-client',s?.client);sv('sp-type',s?.type||'장애 처리');sv('sp-title',s?.title);sv('sp-req-date',s?.reqDate||ymd(new Date()));sv('sp-status',s?.status||'open');initProds(s?.prods||(s?.prod?[s.prod]:[]));document.getElementById('sp-allday').checked=s?.allday||false;sv('sp-start-date',s?.startDate||s?.reqDate||ymd(new Date()));sv('sp-desc',s?.desc);sv('sp-result',s?.result);sv('sp-files',s?.filesNote);initTags('sp',s?.tags||[]);toggleSupAllday();sv('sp-done',s?.doneDate||s?.reqDate||ymd(new Date()));document.getElementById('sp-prod-opts').style.display='none';document.getElementById('sup-modal').classList.add('open');buildTimePicker('sp-start-tp','sp-start-time',s?.startTime||'');buildTimePicker('sp-end-tp','sp-end-time',s?.endTime||'');setTimeout(calcSupDur,100);};
-window.saveSup=async function(){const t=v('sp-title');if(!t){showToast('제목을 입력해주세요');return;}const reqDate=v('sp-req-date');if(!reqDate){showToast('고객 요청일을 입력해주세요');return;}const allday=document.getElementById('sp-allday').checked,startDate=v('sp-start-date')||reqDate,startTime=getTPValue('sp-start-time'),endTime=getTPValue('sp-end-time'),doneDate=v('sp-done'),dur=allday?null:calcDuration(startDate,startTime,doneDate||startDate,endTime),obj={client:v('sp-client'),type:v('sp-type'),title:t,reqDate,startDate,status:v('sp-status'),prods:selProds,allday,startTime:allday?'':startTime,endTime:allday?'':endTime,doneDate:doneDate||reqDate,duration:dur,desc:v('sp-desc'),result:v('sp-result'),filesNote:v('sp-files'),tags:tmpTags.sp||[]};let saved;if(eId.sup){await fsUpd('support',eId.sup,{id:eId.sup,...obj});saved={id:eId.sup,...obj};}else{saved=await fsAdd('support',obj);}await autoCreateLog(saved);if(saved&&obj.result&&!eId.sup){const sid=saved.id||saved;const ns=D.support.find(x=>x.id===sid);if(ns){if(!ns.history)ns.history=[];ns.history.push({date:obj.reqDate||ymd(new Date()),startTime:obj.startTime||'',endTime:obj.endTime||'',status:obj.status||'open',engineer:'',content:obj.result,files:''});await fsUpd('support',sid,ns);}}closeM('sup-modal',true);renderSup();showToast('기술지원이 저장되었습니다 ✓');};
+window.openSupMod=function(id){eId.sup=id;document.getElementById('sup-mt-t').textContent=id?'기술지원 수정':'기술지원 등록';fillSel('sp-client',false);const s=id?D.support.find(x=>x.id===id):null;sv('sp-client',s?.client);sv('sp-type',s?.type||'장애 처리');sv('sp-title',s?.title);sv('sp-req-date',s?.reqDate||'');sv('sp-req-time',s?.reqTime||'');sv('sp-status',s?.status||'open');initProds(s?.prods||(s?.prod?[s.prod]:[]));document.getElementById('sp-allday').checked=s?.allday||false;sv('sp-start-date',s?.startDate||s?.reqDate||ymd(new Date()));sv('sp-desc',s?.desc);sv('sp-result',s?.result);sv('sp-detail',s?.detail||'');sv('sp-files',s?.filesNote);initTags('sp',s?.tags||[]);toggleSupAllday();sv('sp-done',s?.doneDate||s?.reqDate||ymd(new Date()));document.getElementById('sp-prod-opts').style.display='none';document.getElementById('sup-modal').classList.add('open');buildTimePicker('sp-start-tp','sp-start-time',s?.startTime||'');buildTimePicker('sp-end-tp','sp-end-time',s?.endTime||'');setTimeout(calcSupDur,100);};
+window.saveSup=async function(){const t=v('sp-title');if(!t){showToast('제목을 입력해주세요');return;}const reqDate=v('sp-req-date')||'';const allday=document.getElementById('sp-allday').checked,startDate=v('sp-start-date')||reqDate,startTime=getTPValue('sp-start-time'),endTime=getTPValue('sp-end-time'),doneDate=v('sp-done'),dur=allday?null:calcDuration(startDate,startTime,doneDate||startDate,endTime),obj={client:v('sp-client'),type:v('sp-type'),title:t,reqDate,reqTime:v('sp-req-time')||'',startDate,status:v('sp-status'),prods:selProds,allday,startTime:allday?'':startTime,endTime:allday?'':endTime,doneDate:doneDate||reqDate,duration:dur,desc:v('sp-desc'),result:v('sp-result'),detail:v('sp-detail')||'',filesNote:v('sp-files'),tags:tmpTags.sp||[]};let saved;if(eId.sup){await fsUpd('support',eId.sup,{id:eId.sup,...obj});saved={id:eId.sup,...obj};}else{saved=await fsAdd('support',obj);}const doAutoLog=document.getElementById('sp-auto-log')?.checked!==false;if(doAutoLog){const logForCreate={...saved,...obj,title:'[기술지원] '+(obj.title||''),date:obj.startDate||obj.reqDate||ymd(new Date()),content:(obj.desc||'')+(obj.result?' / 처리결과: '+obj.result:'')+(obj.detail?' [세부정보] '+obj.detail:'')};await fsAdd('logs',{type:'기술지원',client:logForCreate.client,title:logForCreate.title,date:logForCreate.date,startTime:logForCreate.startTime||'',endTime:logForCreate.endTime||'',content:logForCreate.content,action:'',autoFromSup:logForCreate.id||'',filesNote:logForCreate.filesNote||'',tags:[]});}if(saved&&obj.result&&!eId.sup){const sid=saved.id||saved;const ns=D.support.find(x=>x.id===sid);if(ns){if(!ns.history)ns.history=[];ns.history.push({date:obj.startDate||obj.reqDate||ymd(new Date()),startTime:obj.startTime||'',endTime:obj.endTime||'',status:obj.status||'open',engineer:'',content:obj.result,detail:obj.detail||'',files:''});await fsUpd('support',sid,ns);}}closeM('sup-modal',true);renderSup();showToast('기술지원이 저장되었습니다 ✓');};
 async function autoCreateLog(sup){if(!sup.title||!sup.reqDate)return;const existing=D.logs.find(l=>l.autoFromSup===sup.id);const ts=sup.allday?'종일':(sup.startTime||'')+(sup.endTime?' ~ '+sup.endTime:'');const obj={date:sup.reqDate,type:'고객사 지원',client:sup.client||'',title:'[기술지원] '+sup.title,content:(ts?'시간: '+ts+'\n':'')+(sup.desc||''),action:sup.result||'',filesNote:sup.filesNote||'',tags:sup.tags||[],autoFromSup:sup.id};if(existing){await fsUpd('logs',existing.id,{id:existing.id,...obj});}else{await fsAdd('logs',obj);}if(document.getElementById('page-worklog')?.classList.contains('active'))renderLog();}
 
 // PROJECTS
@@ -1406,7 +1423,7 @@ window.openSupHistory=function(id){
     '<div style="font-size:12px;color:var(--text2);margin-top:4px;">'+
     esc(s.client)+' · '+esc(s.type)+
     ' · <span class="badge '+(bMap[s.status]||'b-open')+'">'+stLbl(s.status)+'</span></div>'+
-    '<div style="font-size:12px;color:var(--text2);margin-top:2px;">📌 고객 요청일: '+s.reqDate+'</div>'+
+    ((s.reqDate)?'<div style="font-size:12px;color:var(--text2);margin-top:2px;">📌 고객 요청일: '+s.reqDate+(s.reqTime?' '+s.reqTime:'')+'</div>':'')+
     ((s.startDate||s.startTime)?'<div style="font-size:12px;color:var(--text2);margin-top:1px;">🔧 기술지원: '+(s.startDate&&s.startDate!==s.reqDate?s.startDate:'')+(s.startTime?' '+s.startTime:'')+(s.endTime?' ~ '+(s.doneDate&&s.doneDate!==s.startDate?s.doneDate+' ':'')+s.endTime:'')+(s.duration?' · ⏱ '+s.duration.label:'')+'</div>':'')+
     (prods.length?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">📦 '+prods.map(p=>esc(p)).join(', ')+'</div>':'')+
     '</div>';
@@ -1437,9 +1454,12 @@ window.openSupHistory=function(id){
   addBtn.addEventListener('click',function(){
     document.getElementById('sh-modal-title').textContent='작업 이력 추가';
     document.getElementById('sh-edit-idx').value='-1';
+    document.getElementById('sh-modal-title').textContent='작업 이력 추가';
+    document.getElementById('sh-edit-idx').value='-1';
     sv('sh-date',ymd(new Date()));sv('sh-start-time','');sv('sh-end-time','');
     sv('sh-status',s.status||'open');sv('sh-engineer','');
-    sv('sh-content','');sv('sh-files','');
+    sv('sh-content','');sv('sh-detail','');sv('sh-files','');
+    const autoLogChk=document.getElementById('sh-auto-log');if(autoLogChk)autoLogChk.checked=false;
     document.getElementById('sh-sup-id').value=s.id;
     document.getElementById('sup-hist-add-modal').classList.add('open');
   });
@@ -1467,6 +1487,7 @@ window.openSupHistory=function(id){
         (isBase?'<span style="font-size:10px;color:var(--text3);margin-left:4px;">처리내용</span>':'<div style="margin-left:auto;display:flex;gap:4px;"><span class="btn xs" style="font-size:10px;cursor:pointer;padding:2px 8px;" data-edit-sup="'+s.id+'" data-edit-idx="'+h._origIdx+'">✏</span><span class="btn dg xs" style="font-size:10px;cursor:pointer;padding:2px 8px;" data-del-sup="'+s.id+'" data-del-idx="'+h._origIdx+'">🗑</span></div>')+
         '</div>'+
         '<div class="tl-content" style="white-space:pre-wrap;margin-top:4px;">'+esc(h.content)+
+        (h.detail?'<div style="font-size:11px;color:var(--text2);background:var(--bg3);padding:6px 8px;border-radius:4px;margin-top:6px;white-space:pre-wrap;"><b>세부정보</b><br>'+esc(h.detail)+'</div>':'')+
         (h.files?'<div style="font-size:11px;color:var(--text2);margin-top:4px;">📎 '+esc(h.files)+'</div>':'')+
         '</div>';
       if(!isBase){
@@ -1512,6 +1533,7 @@ window.editSupHistory=function(supId,idx){
   sv('sh-status',h.status||'open');
   sv('sh-engineer',h.engineer||'');
   sv('sh-content',h.content||'');
+  sv('sh-detail',h.detail||'');
   sv('sh-files',h.files||'');
   document.getElementById('sup-hist-add-modal').classList.add('open');
 };
@@ -1531,6 +1553,7 @@ window.saveSupHistory=async function(){
     status:newStatus,
     engineer:v('sh-engineer')||'',
     content:cnt,
+    detail:v('sh-detail')||'',
     files:v('sh-files')||''
   };
   if(editIdx>=0&&s.history[editIdx]){
@@ -1545,8 +1568,22 @@ window.saveSupHistory=async function(){
     showToast('작업 이력이 추가되었습니다 ✓');
   }
   await fsUpd('support',id,s);
+  // 업무일지 자동 등록
+  if(document.getElementById('sh-auto-log')?.checked){
+    const logObj={
+      type:'기술지원',client:s.client,
+      title:'[기술지원] '+s.title,
+      date:histEntry.date,
+      startTime:histEntry.startTime,
+      endTime:histEntry.endTime,
+      content:histEntry.content+(histEntry.detail?'\n\n[세부정보]\n'+histEntry.detail:''),
+      action:'',autoFromSup:id,filesNote:histEntry.files,tags:[]
+    };
+    await fsAdd('logs',logObj);
+  }
   closeM('sup-hist-add-modal',true);
   renderSup();
+  showToast(editIdx>=0?'작업 이력이 수정되었습니다 ✓':'작업 이력이 추가되었습니다 ✓');
   openSupHistory(id);
 };
 
