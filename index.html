@@ -850,15 +850,25 @@ label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-wei
       <div class="ms-opt" onclick="toggleProd('기타')">기타</div>
     </div>
   </div>
-  <div class="toggle-row"><label class="toggle"><input type="checkbox" id="sp-allday" onchange="toggleSupAllday()"><span class="toggle-slider"></span></label><span class="toggle-lbl">종일 (All day)</span></div>
   <div class="fr"><label>처리 상태</label><select id="sp-status"><option value="open">미처리</option><option value="prog">처리중</option><option value="done">완료</option></select></div>
-  <div class="fg2">
-    <div class="fr"><label>요청일 (시작) *</label><input type="date" id="sp-req-date"></div>
-    <div class="fr" id="sp-start-tp-row"><label>시작 시간</label><div class="time-picker-wrap" id="sp-start-tp"></div></div>
+  <!-- 고객 요청일 -->
+  <div class="fr"><label>📌 고객 요청일 *</label><input type="date" id="sp-req-date"></div>
+  <!-- 기술지원 시작 -->
+  <div style="background:var(--bg3);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">🔧 기술지원 시작</div>
+    <div class="toggle-row" style="margin-bottom:10px;"><label class="toggle"><input type="checkbox" id="sp-allday" onchange="toggleSupAllday()"><span class="toggle-slider"></span></label><span class="toggle-lbl">종일 (All day)</span></div>
+    <div class="fg2" id="sp-start-row2">
+      <div class="fr"><label>시작일</label><input type="date" id="sp-start-date"></div>
+      <div class="fr" id="sp-start-tp-row"><label>시작 시간</label><div class="time-picker-wrap" id="sp-start-tp"></div></div>
+    </div>
   </div>
-  <div class="fg2" id="sp-end-row">
-    <div class="fr"><label>완료일 (종료)</label><input type="date" id="sp-done"></div>
-    <div class="fr" id="sp-end-tp-row"><label>종료 시간</label><div class="time-picker-wrap" id="sp-end-tp"></div></div>
+  <!-- 기술지원 종료 -->
+  <div style="background:var(--bg3);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;" id="sp-end-section">
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">✅ 기술지원 종료</div>
+    <div class="fg2" id="sp-end-row">
+      <div class="fr"><label>종료일</label><input type="date" id="sp-done"></div>
+      <div class="fr" id="sp-end-tp-row"><label>종료 시간</label><div class="time-picker-wrap" id="sp-end-tp"></div></div>
+    </div>
   </div>
   <div id="sp-dur-row" style="margin-bottom:14px;"></div>
   <div class="fr"><label>요청/증상 내용</label><textarea id="sp-desc" class="tall"></textarea></div>
@@ -1087,10 +1097,12 @@ window.toggleEvAllday=function(){
 };
 window.toggleSupAllday=function(){
   const a=document.getElementById('sp-allday').checked;
-  const timeRows=['sp-start-tp-row','sp-end-tp-row','sp-dur-row'];
-  timeRows.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=a?'none':'block';});
-  const endRow=document.getElementById('sp-end-row');
-  if(endRow)endRow.style.display=a?'none':'grid';
+  ['sp-start-tp-row','sp-end-tp-row','sp-dur-row'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display=a?'none':'block';
+  });
+  ['sp-end-row','sp-start-row2'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display=a?'none':'grid';
+  });
   if(!a){
     setTimeout(()=>{
       if(!document.getElementById('sp-start-time-display'))buildTimePicker('sp-start-tp','sp-start-time','');
@@ -1202,9 +1214,9 @@ window.saveKi=async function(){const t=v('ki-title');if(!t){showToast('제목을
 // SUPPORT
 function renderSup(){updSelects();const q=(v('sup-search')||'').toLowerCase(),cf=document.getElementById('sup-client-f').value,sf=document.getElementById('sup-status-f').value;
   const sorted=D.support.slice().sort((a,b)=>(b.reqDate||'').localeCompare(a.reqDate||'')||(b.id||'').localeCompare(a.id||''));
-  const list=sorted.filter(s=>(!q||(s.title+s.desc+s.client).toLowerCase().includes(q))&&(!cf||s.client===cf)&&(!sf||s.status===sf)),bMap={open:'b-open',prog:'b-prog',done:'b-done'};document.getElementById('sup-list').innerHTML=list.length?list.map((s,idx)=>{const prods=Array.isArray(s.prods)?s.prods:(s.prod?[s.prod]:[]),ts=s.allday?'종일':((s.startTime||s.endTime)?((s.reqDate||'')+(s.startTime?' '+s.startTime:'')+(s.endTime?' ~ '+(s.doneDate&&s.doneDate!==s.reqDate?s.doneDate+' ':'')+s.endTime:'')):'');return'<div class="card" style="cursor:pointer;" onclick="openSupHistory(\''+s.id+'\')"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;"><span style="font-size:10px;font-weight:700;background:var(--bg3);color:var(--text2);padding:2px 8px;border-radius:20px;flex-shrink:0;">No.'+( list.length-idx)+'</span><span style="font-size:13px;font-weight:600;">'+esc(s.title)+'</span></div><div style="font-size:11px;color:var(--text2);margin-top:1px;">'+esc(s.client)+' · '+esc(s.type)+' · 요청: '+s.reqDate+(ts?' · '+ts:'')+(s.doneDate&&s.status==='done'?' → 완료: '+s.doneDate:'')+((s.history&&s.history.length)?' · <span style="font-size:10px;font-weight:700;color:var(--teal);background:var(--teal-bg);padding:1px 6px;border-radius:10px;">📋 이력 '+(s.history.length)+'건</span>':'')+'</div>'+(prods.length?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">📦 '+prods.map(p=>esc(p)).join(', ')+'</div>':'')+'</div><div style="display:flex;gap:5px;align-items:center;"><span class="badge '+(bMap[s.status]||'b-open')+'">'+stLbl(s.status)+'</span><button class="btn xs" onclick="openSupMod(\''+s.id+'\')">✏</button><button class="btn dg xs" onclick="delItem(\'support\',\''+s.id+'\',renderSup)">🗑</button></div></div>'+(s.desc?'<div style="font-size:12px;margin-bottom:6px;">'+esc(s.desc)+'</div>':'')+(()=>{const latestHist=s.history&&s.history.length?s.history.slice().sort((a,b)=>(b.date+' '+(b.startTime||'')).localeCompare(a.date+' '+(a.startTime||'')))[0]:null;const displayResult=latestHist?latestHist.content:s.result;return displayResult?'<div style="font-size:11px;color:var(--green-text);background:var(--green-bg);padding:5px 9px;border-radius:8px;">✓ '+esc(displayResult.slice(0,120))+(displayResult.length>120?'...':'')+'</div>':'';})()+(s.filesNote?'<div style="font-size:11px;color:var(--text2);margin-top:5px;">📎 '+esc(s.filesNote)+'</div>':'')+tagsHtml(s.tags)+'</div>';}).join(''):'<div class="card"><div class="empty">기술지원 내역이 없습니다</div></div>';}
-window.openSupMod=function(id){eId.sup=id;document.getElementById('sup-mt-t').textContent=id?'기술지원 수정':'기술지원 등록';fillSel('sp-client',false);const s=id?D.support.find(x=>x.id===id):null;sv('sp-client',s?.client);sv('sp-type',s?.type||'장애 처리');sv('sp-title',s?.title);sv('sp-req-date',s?.reqDate||ymd(new Date()));sv('sp-status',s?.status||'open');initProds(s?.prods||(s?.prod?[s.prod]:[]));document.getElementById('sp-allday').checked=s?.allday||false;sv('sp-desc',s?.desc);sv('sp-result',s?.result);sv('sp-files',s?.filesNote);initTags('sp',s?.tags||[]);toggleSupAllday();sv('sp-done',s?.doneDate||s?.reqDate||ymd(new Date()));document.getElementById('sp-prod-opts').style.display='none';document.getElementById('sup-modal').classList.add('open');buildTimePicker('sp-start-tp','sp-start-time',s?.startTime||'');buildTimePicker('sp-end-tp','sp-end-time',s?.endTime||'');setTimeout(calcSupDur,100);};
-window.saveSup=async function(){const t=v('sp-title');if(!t){showToast('제목을 입력해주세요');return;}const reqDate=v('sp-req-date');if(!reqDate){showToast('요청일을 입력해주세요');return;}const allday=document.getElementById('sp-allday').checked,startTime=getTPValue('sp-start-time'),endTime=getTPValue('sp-end-time'),doneDate=v('sp-done'),dur=allday?null:calcDuration(reqDate,startTime,doneDate||reqDate,endTime),obj={client:v('sp-client'),type:v('sp-type'),title:t,reqDate,status:v('sp-status'),prods:selProds,allday,startTime:allday?'':startTime,endTime:allday?'':endTime,doneDate:doneDate||reqDate,duration:dur,desc:v('sp-desc'),result:v('sp-result'),filesNote:v('sp-files'),tags:tmpTags.sp||[]};let saved;if(eId.sup){await fsUpd('support',eId.sup,{id:eId.sup,...obj});saved={id:eId.sup,...obj};}else{saved=await fsAdd('support',obj);}await autoCreateLog(saved);closeM('sup-modal',true);renderSup();showToast('기술지원이 저장되었습니다 ✓');};
+  const list=sorted.filter(s=>(!q||(s.title+s.desc+s.client).toLowerCase().includes(q))&&(!cf||s.client===cf)&&(!sf||s.status===sf)),bMap={open:'b-open',prog:'b-prog',done:'b-done'};document.getElementById('sup-list').innerHTML=list.length?list.map((s,idx)=>{const prods=Array.isArray(s.prods)?s.prods:(s.prod?[s.prod]:[]),ts=s.allday?'종일':((s.startTime||s.endTime)?((s.reqDate||'')+(s.startTime?' '+s.startTime:'')+(s.endTime?' ~ '+(s.doneDate&&s.doneDate!==s.reqDate?s.doneDate+' ':'')+s.endTime:'')):'');return'<div class="card" style="cursor:pointer;" onclick="openSupHistory(\''+s.id+'\')"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;"><span style="font-size:10px;font-weight:700;background:var(--bg3);color:var(--text2);padding:2px 8px;border-radius:20px;flex-shrink:0;">No.'+( list.length-idx)+'</span><span style="font-size:13px;font-weight:600;">'+esc(s.title)+'</span></div><div style="font-size:11px;color:var(--text2);margin-top:1px;">'+esc(s.client)+' · '+esc(s.type)+' · 요청: '+s.reqDate+(s.startDate&&s.startDate!==s.reqDate?' · 시작: '+s.startDate:'')+(ts?' · '+ts:'')+(s.doneDate&&s.status==='done'?' → 완료: '+s.doneDate:'')+((s.history&&s.history.length)?' · <span style="font-size:10px;font-weight:700;color:var(--teal);background:var(--teal-bg);padding:1px 6px;border-radius:10px;">📋 이력 '+(s.history.length)+'건</span>':'')+'</div>'+(prods.length?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">📦 '+prods.map(p=>esc(p)).join(', ')+'</div>':'')+'</div><div style="display:flex;gap:5px;align-items:center;"><span class="badge '+(bMap[s.status]||'b-open')+'">'+stLbl(s.status)+'</span><button class="btn xs" onclick="openSupMod(\''+s.id+'\')">✏</button><button class="btn dg xs" onclick="delItem(\'support\',\''+s.id+'\',renderSup)">🗑</button></div></div>'+(s.desc?'<div style="font-size:12px;margin-bottom:6px;">'+esc(s.desc)+'</div>':'')+(()=>{const latestHist=s.history&&s.history.length?s.history.slice().sort((a,b)=>(b.date+' '+(b.startTime||'')).localeCompare(a.date+' '+(a.startTime||'')))[0]:null;const displayResult=latestHist?latestHist.content:s.result;return displayResult?'<div style="font-size:11px;color:var(--green-text);background:var(--green-bg);padding:5px 9px;border-radius:8px;">✓ '+esc(displayResult.slice(0,120))+(displayResult.length>120?'...':'')+'</div>':'';})()+(s.filesNote?'<div style="font-size:11px;color:var(--text2);margin-top:5px;">📎 '+esc(s.filesNote)+'</div>':'')+tagsHtml(s.tags)+'</div>';}).join(''):'<div class="card"><div class="empty">기술지원 내역이 없습니다</div></div>';}
+window.openSupMod=function(id){eId.sup=id;document.getElementById('sup-mt-t').textContent=id?'기술지원 수정':'기술지원 등록';fillSel('sp-client',false);const s=id?D.support.find(x=>x.id===id):null;sv('sp-client',s?.client);sv('sp-type',s?.type||'장애 처리');sv('sp-title',s?.title);sv('sp-req-date',s?.reqDate||ymd(new Date()));sv('sp-status',s?.status||'open');initProds(s?.prods||(s?.prod?[s.prod]:[]));document.getElementById('sp-allday').checked=s?.allday||false;sv('sp-start-date',s?.startDate||s?.reqDate||ymd(new Date()));sv('sp-desc',s?.desc);sv('sp-result',s?.result);sv('sp-files',s?.filesNote);initTags('sp',s?.tags||[]);toggleSupAllday();sv('sp-done',s?.doneDate||s?.reqDate||ymd(new Date()));document.getElementById('sp-prod-opts').style.display='none';document.getElementById('sup-modal').classList.add('open');buildTimePicker('sp-start-tp','sp-start-time',s?.startTime||'');buildTimePicker('sp-end-tp','sp-end-time',s?.endTime||'');setTimeout(calcSupDur,100);};
+window.saveSup=async function(){const t=v('sp-title');if(!t){showToast('제목을 입력해주세요');return;}const reqDate=v('sp-req-date');if(!reqDate){showToast('고객 요청일을 입력해주세요');return;}const allday=document.getElementById('sp-allday').checked,startDate=v('sp-start-date')||reqDate,startTime=getTPValue('sp-start-time'),endTime=getTPValue('sp-end-time'),doneDate=v('sp-done'),dur=allday?null:calcDuration(startDate,startTime,doneDate||startDate,endTime),obj={client:v('sp-client'),type:v('sp-type'),title:t,reqDate,startDate,status:v('sp-status'),prods:selProds,allday,startTime:allday?'':startTime,endTime:allday?'':endTime,doneDate:doneDate||reqDate,duration:dur,desc:v('sp-desc'),result:v('sp-result'),filesNote:v('sp-files'),tags:tmpTags.sp||[]};let saved;if(eId.sup){await fsUpd('support',eId.sup,{id:eId.sup,...obj});saved={id:eId.sup,...obj};}else{saved=await fsAdd('support',obj);}await autoCreateLog(saved);closeM('sup-modal',true);renderSup();showToast('기술지원이 저장되었습니다 ✓');};
 async function autoCreateLog(sup){if(!sup.title||!sup.reqDate)return;const existing=D.logs.find(l=>l.autoFromSup===sup.id);const ts=sup.allday?'종일':(sup.startTime||'')+(sup.endTime?' ~ '+sup.endTime:'');const obj={date:sup.reqDate,type:'고객사 지원',client:sup.client||'',title:'[기술지원] '+sup.title,content:(ts?'시간: '+ts+'\n':'')+(sup.desc||''),action:sup.result||'',filesNote:sup.filesNote||'',tags:sup.tags||[],autoFromSup:sup.id};if(existing){await fsUpd('logs',existing.id,{id:existing.id,...obj});}else{await fsAdd('logs',obj);}if(document.getElementById('page-worklog')?.classList.contains('active'))renderLog();}
 
 // PROJECTS
@@ -1394,9 +1406,8 @@ window.openSupHistory=function(id){
     '<div style="font-size:12px;color:var(--text2);margin-top:4px;">'+
     esc(s.client)+' · '+esc(s.type)+
     ' · <span class="badge '+(bMap[s.status]||'b-open')+'">'+stLbl(s.status)+'</span></div>'+
-    '<div style="font-size:12px;color:var(--text2);margin-top:2px;">요청일: '+s.reqDate+
-    (s.doneDate?' → 완료: '+s.doneDate:'')+
-    (s.startTime?' · '+s.startTime+(s.endTime?' ~ '+s.endTime:''):'')+'</div>'+
+    '<div style="font-size:12px;color:var(--text2);margin-top:2px;">📌 고객 요청일: '+s.reqDate+'</div>'+
+    ((s.startDate||s.startTime)?'<div style="font-size:12px;color:var(--text2);margin-top:1px;">🔧 기술지원: '+(s.startDate&&s.startDate!==s.reqDate?s.startDate:'')+(s.startTime?' '+s.startTime:'')+(s.endTime?' ~ '+(s.doneDate&&s.doneDate!==s.startDate?s.doneDate+' ':'')+s.endTime:'')+(s.duration?' · ⏱ '+s.duration.label:'')+'</div>':'')+
     (prods.length?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">📦 '+prods.map(p=>esc(p)).join(', ')+'</div>':'')+
     '</div>';
   // ── Content ──
@@ -1409,13 +1420,20 @@ window.openSupHistory=function(id){
       '<div style="font-size:13px;white-space:pre-wrap;padding:10px;background:var(--bg3);border-radius:var(--r);">'+esc(s.desc)+'</div>';
     el.appendChild(d);
   }
-  if(s.result){
+  // 처리 결과: 최신 이력 우선, 없으면 s.result
+  const sortedHistR=(s.history||[]).slice().sort((a,b)=>(b.date+' '+(b.startTime||b.time||'')).localeCompare(a.date+' '+(a.startTime||a.time||'')));
+  const latestContent=sortedHistR.length?sortedHistR[0].content:null;
+  const displayResult=latestContent||s.result;
+  if(displayResult){
     const r=document.createElement('div');r.style.marginBottom='12px';
-    r.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;">처리 결과</div>'+
-      '<div style="font-size:13px;color:var(--green-text);background:var(--green-bg);padding:10px;border-radius:var(--r);">✓ '+esc(s.result)+'</div>';
+    r.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;">처리 결과'+
+      (latestContent?'<span style="font-size:10px;color:var(--teal-text);background:var(--teal-bg);padding:1px 6px;border-radius:10px;margin-left:6px;">최근 이력</span>':'')+
+      '</div><div style="font-size:13px;color:var(--green-text);background:var(--green-bg);padding:10px;border-radius:var(--r);white-space:pre-wrap;">✓ '+
+      esc(displayResult.slice(0,300))+(displayResult.length>300?'...':'')+
+      '</div>';
     el.appendChild(r);
   }
-  // ── Timeline header ──
+    // ── Timeline header ──
   const hist=(s.history||[]).slice().sort((a,b)=>(a.date+' '+(a.time||'')).localeCompare(b.date+' '+(b.time||'')));
   const stMap={open:'미처리',prog:'처리중',done:'완료'};
   const stColor={open:'var(--blue)',prog:'var(--amber)',done:'var(--green)'};
@@ -2110,7 +2128,7 @@ function calcEvDur(){
 }
 
 function calcSupDur(){
-  const sd=v('sp-req-date'),ed=v('sp-done'),st=getTPValue('sp-start-time'),et=getTPValue('sp-end-time');
+  const sd=v('sp-start-date')||v('sp-req-date'),ed=v('sp-done'),st=getTPValue('sp-start-time'),et=getTPValue('sp-end-time');
   const dur=calcDuration(sd,st,ed||sd,et);
   const row=document.getElementById('sp-dur-row');if(!row)return;
   row.innerHTML=dur?'<span class="dur-badge">⏱ 소요시간: '+dur.label+'</span>':'';
@@ -2119,7 +2137,7 @@ function calcSupDur(){
 // Listen to date changes for duration recalc
 document.addEventListener('change',function(e){
   if(['ev-start-date','ev-end-date'].includes(e.target.id))calcEvDur();
-  if(['sp-req-date','sp-done'].includes(e.target.id))calcSupDur();
+  if(['sp-req-date','sp-start-date','sp-done'].includes(e.target.id))calcSupDur();
 });
 
 </script>
