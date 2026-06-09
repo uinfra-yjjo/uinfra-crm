@@ -1027,6 +1027,14 @@ let U=null,D={events:[],logs:[],ki:[],support:[],projects:[],clients:[],memos:[]
 let eId={},tmpTags={},selProds=[],calD=new Date(),selD=ymd(new Date());
 
 // UTILS
+function buildGroupHeader(label,count){
+  const div=document.createElement('div');
+  div.className='group-header';
+  div.innerHTML='<div class="group-header-label">📅 '+esc(label)+'</div>'+
+    '<div class="group-header-line"></div>'+
+    '<div class="group-header-count">'+count+'건</div>';
+  return div;
+}
 function ymd(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());}
 function getWeekOfMonth(dateStr){
   if(!dateStr)return 1;
