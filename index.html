@@ -1318,21 +1318,23 @@ function renderLog(){updSelects();const q=(v('log-search')||'').toLowerCase(),tf
       const isAuto=l.autoFromSup||l.type==='기술지원';
       const wrapper=document.createElement('div');
       wrapper.innerHTML='<div class="card" style="cursor:pointer;" onclick="openLogDetail(\''+l.id+'\')">'+
-        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">'+
-        '<div style="flex:1;min-width:0;">'+
-        '<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">'+
-        '<span style="font-size:10px;font-weight:700;background:var(--bg3);color:var(--text2);padding:2px 8px;border-radius:20px;flex-shrink:0;">No.'+logNo+'</span>'+
-        '<span style="font-size:13px;font-weight:600;">'+esc(l.title)+'</span>'+
-        (isAuto?'<span style="font-size:10px;color:var(--teal-text);background:var(--teal-bg);padding:1px 6px;border-radius:10px;flex-shrink:0;">자동생성</span>':'')+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'+
+        '<div style="font-size:12px;font-weight:700;color:var(--blue);background:var(--blue-bg);padding:3px 10px;border-radius:20px;">'+
+        esc(l.date)+(l.startTime?' '+l.startTime+(l.endTime?' ~ '+l.endTime:''):'')+
         '</div>'+
-        '<div style="font-size:11px;color:var(--text2);">'+esc(l.date)+' · '+esc(l.type||'기타')+(l.client?' · '+esc(l.client):'')+(l.startTime?' · '+l.startTime+(l.endTime?' ~ '+l.endTime:''):'')+'</div>'+
+        (isAuto?'<span style="font-size:10px;color:var(--teal-text);background:var(--teal-bg);padding:1px 6px;border-radius:10px;">자동생성</span>':'')+
+        '<span style="margin-left:auto;font-size:10px;font-weight:700;color:var(--text3);background:var(--bg3);padding:1px 7px;border-radius:20px;">No.'+logNo+'</span>'+
         '</div>'+
-        '<div style="display:flex;gap:4px;flex-shrink:0;">'+
+        '<div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:5px;">'+
+        '<span style="font-size:11px;font-weight:700;color:var(--purple);background:var(--purple-bg);padding:2px 8px;border-radius:20px;">'+esc(l.type||'기타')+'</span>'+
+        (l.client?'<span style="font-size:11px;font-weight:600;color:var(--text3);">'+esc(l.client)+'</span>':'')+'</div>'+
+        '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">'+esc(l.title)+'</div>'+
+        (l.content?'<div style="font-size:12px;color:var(--text2);margin-bottom:5px;white-space:pre-wrap;padding:6px 8px;background:var(--bg3);border-radius:var(--r);">'+esc(l.content.slice(0,120))+(l.content.length>120?'...':'')+'</div>':'')+
+        (l.action?'<div style="font-size:11px;color:var(--teal-text);background:var(--teal-bg);padding:4px 8px;border-radius:6px;margin-top:2px;">→ '+esc(l.action.slice(0,100))+'</div>':'')+
+        '<div style="display:flex;justify-content:flex-end;gap:4px;margin-top:6px;">'+
         '<button class="btn xs" onclick="event.stopPropagation();openLogMod(\''+l.id+'\')">✏</button>'+
         '<button class="btn dg xs" onclick="event.stopPropagation();delItem(\'logs\',\''+l.id+'\',renderLog)">🗑</button>'+
-        '</div></div>'+
-        (l.content?'<div style="font-size:12px;color:var(--text2);margin-bottom:5px;white-space:pre-wrap;">'+esc(l.content.slice(0,120))+(l.content.length>120?'...':'')+'</div>':'')+
-        (l.action?'<div style="font-size:11px;color:var(--teal-text);background:var(--teal-bg);padding:4px 8px;border-radius:6px;">→ '+esc(l.action.slice(0,100))+'</div>':'')+
+        '</div>'+
         tagsHtml(l.tags)+'</div>';
       logEl.appendChild(wrapper.firstElementChild);
     });
@@ -1366,24 +1368,28 @@ function renderSup(){updSelects();const q=(v('sup-search')||'').toLowerCase(),cf
       const bMap={open:'b-open',prog:'b-prog',done:'b-done'};
       const wrapper=document.createElement('div');
       wrapper.innerHTML='<div class="card" style="cursor:pointer;" onclick="openSupHistory(\''+s.id+'\')">'+
-        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;">'+
-        '<div><div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">'+
-        '<span style="font-size:10px;font-weight:700;background:var(--bg3);color:var(--text2);padding:2px 8px;border-radius:20px;flex-shrink:0;">No.'+cardNo+'</span>'+
-        '<span style="font-size:13px;font-weight:600;">'+esc(s.title)+'</span></div>'+
-        '<div style="font-size:11px;color:var(--text2);margin-top:1px;">'+esc(s.client)+' · '+esc(s.type)+(s.reqDate?' · 요청: '+s.reqDate+(s.reqTime?' '+s.reqTime:''):'')+
-        (ts?' · '+ts:'')+(s.doneDate&&s.status==='done'?' → 완료: '+s.doneDate:'')+
-        ((s.history&&s.history.length)?' · <span style="font-size:10px;font-weight:700;color:var(--teal);background:var(--teal-bg);padding:1px 6px;border-radius:10px;">📋 이력 '+s.history.length+'건</span>':'')+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'+
+        '<div style="font-size:12px;font-weight:700;color:var(--blue);background:var(--blue-bg);padding:3px 10px;border-radius:20px;">'+
+        (s.startDate||s.reqDate||'날짜없음')+
+        (s.startTime?' '+s.startTime+(s.endTime?' ~ '+s.endTime:''):'')+
         '</div>'+
-        (prods.length?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">📦 '+prods.map(p=>esc(p)).join(', ')+'</div>':'')+
+        (s.duration?'<span style="font-size:11px;color:var(--text2);">⏱ '+s.duration.label+'</span>':'')+
+        '<span style="margin-left:auto;"><span class="badge '+(bMap[s.status]||'b-open')+'">'+stLbl(s.status)+'</span></span>'+
         '</div>'+
-        '<div style="display:flex;gap:5px;align-items:center;">'+
-        '<span class="badge '+(bMap[s.status]||'b-open')+'">'+stLbl(s.status)+'</span>'+
+        '<div style="margin-bottom:5px;">'+
+        '<span style="font-size:11px;font-weight:600;color:var(--text3);margin-right:6px;">'+esc(s.client)+'</span>'+
+        '<span style="font-size:14px;font-weight:700;color:var(--text);">'+esc(s.title)+'</span>'+
+        '<span style="font-size:10px;font-weight:700;color:var(--text3);background:var(--bg3);padding:1px 7px;border-radius:20px;margin-left:6px;">No.'+cardNo+'</span>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--text2);margin-bottom:6px;">'+esc(s.type)+(prods.length?' · 📦 '+prods.map(p=>esc(p)).join(', '):'')+'</div>'+
+        (s.desc?'<div style="font-size:12px;color:var(--text2);margin-bottom:6px;white-space:pre-wrap;padding:6px 8px;background:var(--bg3);border-radius:var(--r);">'+esc(s.desc.slice(0,100))+(s.desc.length>100?'...':'')+'</div>':'')+
+        (displayResult?'<div style="font-size:11px;color:var(--green-text);background:var(--green-bg);padding:5px 9px;border-radius:8px;white-space:pre-wrap;margin-bottom:4px;">✓ '+esc(displayResult.slice(0,120))+(displayResult.length>120?'...':'')+'</div>':'')+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">'+
+        ((s.history&&s.history.length)?'<span style="font-size:10px;font-weight:700;color:var(--teal);background:var(--teal-bg);padding:1px 8px;border-radius:10px;">📋 이력 '+s.history.length+'건</span>':'<span></span>')+
+        '<div style="display:flex;gap:4px;">'+
         '<button class="btn xs" onclick="event.stopPropagation();openSupMod(\''+s.id+'\')">✏</button>'+
         '<button class="btn dg xs" onclick="event.stopPropagation();delItem(\'support\',\''+s.id+'\',renderSup)">🗑</button>'+
         '</div></div>'+
-        (s.desc?'<div style="font-size:12px;margin-bottom:6px;white-space:pre-wrap;">'+esc(s.desc)+'</div>':'')+
-        (displayResult?'<div style="font-size:11px;color:var(--green-text);background:var(--green-bg);padding:5px 9px;border-radius:8px;white-space:pre-wrap;">✓ '+esc(displayResult.slice(0,150))+(displayResult.length>150?'...':'')+'</div>':'')+
-        (s.filesNote?'<div style="font-size:11px;color:var(--text2);margin-top:5px;">📎 '+esc(s.filesNote)+'</div>':'')+
         tagsHtml(s.tags)+'</div>';
       supEl.appendChild(wrapper.firstElementChild);
     });
@@ -1403,7 +1409,28 @@ window.openProjDetail=function(id){const p=D.projects.find(x=>x.id===id);if(!p)r
             ((pg.startTime||pg.endTime)?' <span style="font-size:11px;color:var(--text2);">'+(pg.startTime||'')+(pg.endTime?' ~ '+pg.endTime:'')+'</span>':''):
             '')+
           '</div>'+
-          '<div class="tl-content">'+esc(pg.content)+(pg.filesNote?'<div style="font-size:11px;color:var(--text2);margin-top:3px;">📎 '+esc(pg.filesNote)+'</div>':'')+'</div></div>').join(''):'<div style="font-size:12px;color:var(--text3);">진행 이력 없음</div>';document.getElementById('proj-detail-content').innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;"><div><div style="font-size:16px;font-weight:700;color:var(--text);">'+esc(p.title)+'</div><div style="font-size:12px;color:var(--text2);margin-top:3px;">'+esc(p.client)+' · '+esc(p.prod)+(p.start?' · '+p.start:'')+(p.end?' ~ '+p.end:'')+'</div></div>'+stageBadge(p.stage)+'</div>'+steps+(p.desc?'<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px;background:var(--bg3);border-radius:var(--r);">'+esc(p.desc)+'</div>':'')+tagsHtml(p.tags)+'<div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px;"><div style="font-size:13px;font-weight:600;color:var(--text);">진행 이력</div><button class="btn xs pr" onclick="openProgMod(\''+p.id+'\')">+ 이력 추가</button></div><div class="timeline">'+tl+'</div>';document.getElementById('proj-detail-modal').classList.add('open');};
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;">'+
+          '<div class="tl-content" style="flex:1;">'+esc(pg.content)+(pg.filesNote?'<div style="font-size:11px;color:var(--text2);margin-top:3px;">📎 '+esc(pg.filesNote)+'</div>':'')+'</div>'+
+          '<div style="display:flex;gap:4px;margin-left:8px;flex-shrink:0;">'+
+          '<span class="btn xs" style="cursor:pointer;" data-edit-prog-pid="'+p.id+'" data-edit-prog-idx="'+prog.slice().reverse().indexOf(pg)+'">✏</span>'+
+          '<span class="btn dg xs" style="cursor:pointer;" data-del-prog-pid="'+p.id+'" data-del-prog-idx="'+prog.slice().reverse().indexOf(pg)+'">🗑</span>'+
+          '</div></div></div>').join(''):'<div style="font-size:12px;color:var(--text3);">진행 이력 없음</div>';document.getElementById('proj-detail-content').innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;"><div><div style="font-size:16px;font-weight:700;color:var(--text);">'+esc(p.title)+'</div><div style="font-size:12px;color:var(--text2);margin-top:3px;">'+esc(p.client)+' · '+esc(p.prod)+(p.start?' · '+p.start:'')+(p.end?' ~ '+p.end:'')+'</div></div>'+stageBadge(p.stage)+'</div>'+steps+(p.desc?'<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px;background:var(--bg3);border-radius:var(--r);">'+esc(p.desc)+'</div>':'')+tagsHtml(p.tags)+'<div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px;"><div style="font-size:13px;font-weight:600;color:var(--text);">진행 이력</div><button class="btn xs pr" onclick="openProgMod(\''+p.id+'\')">+ 이력 추가</button></div><div class="timeline">'+tl+'</div>';document.getElementById('proj-detail-modal').classList.add('open');
+  // Attach edit/del listeners to timeline
+  document.querySelectorAll('[data-edit-prog-pid]').forEach(el=>{
+    el.addEventListener('click',function(){
+      const pid=this.dataset.editProgPid;
+      const ridx=parseInt(this.dataset.editProgIdx);
+      openEditProg(pid,ridx);
+    });
+  });
+  document.querySelectorAll('[data-del-prog-pid]').forEach(el=>{
+    el.addEventListener('click',function(){
+      const pid=this.dataset.delProgPid;
+      const ridx=parseInt(this.dataset.delProgIdx);
+      delProg(pid,ridx);
+    });
+  });
+};
 window.openProgMod=function(pid){document.getElementById('prog-pj-id').value=pid;sv('pg-date',ymd(new Date()));const p=D.projects.find(x=>x.id===pid);sv('pg-stage',p?.stage||'prop');sv('pg-content','');sv('pg-files','');
   const attendNo=document.getElementById('pg-attend-no');if(attendNo)attendNo.checked=true;
   const attendSec=document.getElementById('pg-attend-section');if(attendSec)attendSec.style.display='none';
@@ -1412,11 +1439,44 @@ window.openProgMod=function(pid){document.getElementById('prog-pj-id').value=pid
   const pst=document.getElementById('pg-start-time');if(pst)pst.value='';
   const pet=document.getElementById('pg-end-time');if(pet)pet.value='';
   document.getElementById('prog-modal').classList.add('open');};
-window.saveProg=async function(){const cnt=v('pg-content');if(!cnt)return;const pid=document.getElementById('prog-pj-id').value,p=D.projects.find(x=>x.id===pid);if(!p)return;if(!p.progress)p.progress=[];const attend=document.getElementById('pg-attend-yes')?.checked?'yes':'no';
+window.togglePgAttend=function(){
+  const isYes=document.getElementById('pg-attend-yes').checked;
+  const section=document.getElementById('pg-attend-section');
+  const autoLogRow=document.getElementById('pg-auto-log-row');
+  if(section)section.style.display=isYes?'block':'none';
+  if(autoLogRow)autoLogRow.style.display=isYes?'flex':'none';
+  if(!isYes){const cb=document.getElementById('pg-auto-log');if(cb)cb.checked=false;}
+};
+window.openEditProg=function(pid,ridx){
+  const p=D.projects.find(x=>x.id===pid);if(!p||!p.progress)return;
+  const origIdx=p.progress.length-1-ridx;
+  const pg=p.progress[origIdx];if(!pg)return;
+  document.getElementById('prog-pj-id').value=pid;
+  document.getElementById('prog-pj-id').dataset.editIdx=String(origIdx);
+  sv('pg-date',pg.date||ymd(new Date()));sv('pg-stage',pg.stage||'prop');
+  sv('pg-content',pg.content||'');sv('pg-files',pg.filesNote||'');
+  const isYes=pg.attend==='yes';
+  const ay=document.getElementById('pg-attend-yes');if(ay)ay.checked=isYes;
+  const an=document.getElementById('pg-attend-no');if(an)an.checked=!isYes;
+  const sec=document.getElementById('pg-attend-section');if(sec)sec.style.display=isYes?'block':'none';
+  const alr=document.getElementById('pg-auto-log-row');if(alr)alr.style.display=isYes?'flex':'none';
+  const pst=document.getElementById('pg-start-time');if(pst)pst.value=pg.startTime||'';
+  const pet=document.getElementById('pg-end-time');if(pet)pet.value=pg.endTime||'';
+  const mtTitle=document.querySelector('#prog-modal .mt');if(mtTitle)mtTitle.firstChild.textContent='진행 이력 수정';
+  document.getElementById('prog-modal').classList.add('open');
+};
+window.delProg=async function(pid,ridx){
+  if(!confirm('이 이력을 삭제할까요?'))return;
+  const p=D.projects.find(x=>x.id===pid);if(!p||!p.progress)return;
+  const origIdx=p.progress.length-1-ridx;
+  p.progress.splice(origIdx,1);
+  await fsUpd('projects',pid,p);openProjDetail(pid);renderProj();showToast('삭제됨');
+};
+window.saveProg=async function(){const cnt=v('pg-content');if(!cnt)return;const pid=document.getElementById('prog-pj-id').value;const editIdx=parseInt(document.getElementById('prog-pj-id').dataset.editIdx??'-1');const p=D.projects.find(x=>x.id===pid);if(!p)return;if(!p.progress)p.progress=[];const attend=document.getElementById('pg-attend-yes')?.checked?'yes':'no';
   const startTime=attend==='yes'?(v('pg-start-time')||''):'';
   const endTime=attend==='yes'?(v('pg-end-time')||''):'';
   const entry={date:v('pg-date'),stage:v('pg-stage'),content:cnt,filesNote:v('pg-files'),attend,startTime,endTime};
-  p.progress.push(entry);p.stage=v('pg-stage');
+  if(editIdx>=0&&p.progress[editIdx]){p.progress[editIdx]=entry;}else{p.progress.push(entry);}p.stage=v('pg-stage');document.getElementById('prog-pj-id').dataset.editIdx='-1';
   await fsUpd('projects',pid,p);
   // 업무일지 자동 등록 (참여 + 체크 시)
   if(attend==='yes'&&document.getElementById('pg-auto-log')?.checked){
